@@ -1,14 +1,9 @@
 <template>
-  <TelaDashboardOperador />
+  <router-view></router-view>
 </template>
 
 <script>
-  import TelaDashboardOperador from './components/TelaDashboardOperador.vue';
-
-  export default {
-    name: 'App',
-    components: {
-      TelaDashboardOperador
-    }
-  }
+export default {
+  name: "App"
+};
 </script>
