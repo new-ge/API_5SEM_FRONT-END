@@ -4,20 +4,28 @@
       <div class="logo">
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
-      <button class="sidebar-button">
-        <img src="/Scores.ico" alt="Dashboard" class="icon">
-      </button>
+      <div class="buttons-container">
+        <button class="sidebar-button">
+          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
+        </button>
+        <button class="sidebar-button">
+          <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
+        </button>
+        <button class="sidebar-button">
+          <img src="/workLogo.ico" alt="Dashboard" class="icon">
+        </button>
+      </div>
+      <router-link to="/">
       <button class="sidebar-button logout">
-        <img src="/LogoutBtn.ico" alt="Sair" class="icon">
+        <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>
+      </router-link>
     </aside>
-
     <main class="content">
       <header class="header">
-        <h1 class="title">Resultados</h1>
+        <p class="title">Resultados</p>
         <span class="user-role">Operador</span>
       </header>
-
       <div class="chart-container">
         <canvas id="resultChart"></canvas>
       </div>
@@ -48,16 +56,24 @@ html, body {
 }
 
 .sidebar {
-  width: 80px;
+  width: 85px;
   background: #ffffff;
-  border: 2px solid #3ab6ff;
+  border: 4px solid #E0E0EF;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px 0;
-  transition: width 0.3s ease;
+  padding: 15px 2px;
   justify-content: space-between;
-  height: 96vh;
+  height: 95vh;
+  margin-left: -3px;
+  margin-top: -3px;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .logo {
@@ -66,21 +82,19 @@ html, body {
 
 .icon-logo {
   width: 82px;
-  height: auto;
+  height: 3vh;
+  margin-bottom: 10vh;
 }
 
 .sidebar-button {
   background: none;
   border: none;
-  margin: 15px 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 60px;
   height: 60px;
-  margin-top: auto;
-  margin-bottom: 0px;
 }
 
 .sidebar-button img {
@@ -89,14 +103,13 @@ html, body {
 }
 
 .logout {
-  margin-top: auto;
+  margin-top: 14vh;
 }
 
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
   overflow: hidden;
   height: 100vh;
 }
@@ -105,8 +118,9 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 23px;
-  font-weight: bold;
+  padding: 0px 15px;
+  height: 6vh;
+  font-size: 25px;
   color: #3ab6ff;
 }
 
@@ -116,11 +130,5 @@ html, body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 60px;
-  }
 }
 </style>
