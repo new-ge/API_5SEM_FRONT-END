@@ -40,7 +40,20 @@
               <canvas id="cardsPorEtiqueta"></canvas>
             </div>
           </div>
-          
+          <div class="chart-group2">
+            <div class="chart-box">
+              <p class="titulos2">Cards Finalizados</p>
+              <div class="chart-container2">
+                <canvas id="cardsFinalizados"></canvas>
+              </div>
+            </div>
+            <div class="chart-box">
+              <p class="titulos2">Cards Criados</p>
+              <div class="chart-container2">
+                <canvas id="cardsCriados"></canvas>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -49,34 +62,44 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
+import { onMounted, ref, nextTick } from 'vue';
+
 Chart.register(...registerables);
-import { onMounted, ref } from 'vue';
 
 export default {
   setup() {
     const labels = ref(['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']);
     const data = ref([3, 1, 10]);
+    
+    const labelsFinalizados = ref(['Sprint1', 'Sprint2', 'Sprint3']);
+    const dataFinalizados = ref([5, 10, 7]);
 
-    const newLabels = ref(['Item A', 'Item B', 'Item C']);
-    const newData = ref([5, 2, 8]);
+    const labelsCriados = ref(['Jan', 'Fev', 'Mar']);
+    const dataCriados = ref([2, 8, 12]);
 
-    onMounted(() => {
-      renderChart('cardsPorEtiqueta', 'Etiquetas', labels.value, data.value);
-      //renderChart('outroGrafico', 'Novo Gráfico', newLabels.value, newData.value);
+    onMounted(async () => {
+      await nextTick(); // Garante que os elementos <canvas> estão disponíveis no DOM
+      
+      renderChart('cardsPorEtiqueta', 'Etiquetas', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
     });
 
-    function renderChart(chartId, label, labels, data) {
+    function renderChart(chartId, label, labels, data, type) {
       const ctx = document.getElementById(chartId);
       if (!ctx) return;
       
       new Chart(ctx, {
-        type: 'bar',
+        type: type,
         data: {
           labels: labels,
           datasets: [{
             label: label,
             data: data,
-            backgroundColor: ['#1E90FF', '#6495ED', '#87CEFA']
+            backgroundColor: type === 'bar' ? ['#1E90FF', '#6495ED', '#87CEFA'] : 'rgba(58, 182, 255, 0.2)',
+            borderColor: '#3ab6ff',
+            borderWidth: 2,
+            fill: true
           }]
         },
         options: {
@@ -86,7 +109,7 @@ export default {
       });
     }
 
-    return { labels, data, newLabels, newData };
+    return { labels, data, labelsFinalizados, dataFinalizados, labelsCriados, dataCriados };
   }
 };
 </script>
@@ -210,12 +233,18 @@ html, body {
 }
 
 .chart-group2 {
-  background: white;
   border-radius: 10px;
-  padding: 10px;
-  width: 98%;
+  width: 100%;
   height: 40%;
   margin-top: -1vh;
+  display: flex;
+  flex-direction: row;
+  gap: 1%;
+}
+
+.chart-box {
+  background: white;
+  border-radius: 10px;
 }
 
 .cards-container {
@@ -257,15 +286,15 @@ html, body {
 
 .chart-container2 {
   background: #f9f9f9;
-  padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 29vh;
-  width: 95%;
+  height: 30vh;
+  width: 94%;
   min-width: 430px;
+  margin-left: 3%;
 }
 
 .titulos {
@@ -274,6 +303,16 @@ html, body {
   margin-top: 0vh;
   margin-bottom: 0vh;
   border-bottom: 1px solid #E0E0EF;
+}
+
+.titulos2 {
+  width: 98%;
+  min-width: 450px;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  border-bottom: 1px solid #E0E0EF;
+  margin-left: 1vh;
+  margin-right: 0vh;
 }
 
 * {
