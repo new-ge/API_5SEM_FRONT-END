@@ -55,6 +55,20 @@
             </div>
           </div>
         </div>
+        <div class="charts2">
+          <div class="chart-group">
+          <p class="titulos">Projeto Atual</p>
+            <div class="cards-container">
+              <div class="card" v-for="(label2, index) in labels2" :key="index">
+                <p>{{ label2 }}</p>
+                <p class="card-value">{{ data2[index] }}</p>
+              </div>
+            </div>
+            <div class="chart-container3">
+              <canvas id="projetoAtual"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -70,37 +84,74 @@ export default {
   setup() {
     const labels = ref(['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']);
     const data = ref([3, 1, 10]);
-    
-    const labelsFinalizados = ref(['Sprint1', 'Sprint2', 'Sprint3']);
-    const dataFinalizados = ref([5, 10, 7]);
 
-    const labelsCriados = ref(['Jan', 'Fev', 'Mar']);
+    const labelsFinalizados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
+    const dataPlanejado = ref([5, 10, 7]);
+    const dataRealizado = ref([2, 6, 12]);
+
+    const labelsCriados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
     const dataCriados = ref([2, 8, 12]);
 
+    const labels2 = ref(['To do', 'In progress', 'Done']);
+    const data2 = ref([2, 9, 5]);
+
+    const chartInstances = {};
+
     onMounted(async () => {
-      await nextTick(); // Garante que os elementos <canvas> estão disponíveis no DOM
-      
+      await nextTick();
       renderChart('cardsPorEtiqueta', 'Etiquetas', labels.value, data.value, 'bar');
-      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart(
+        'cardsFinalizados', 
+        '', 
+        labelsFinalizados.value, 
+        [dataPlanejado.value, dataRealizado.value],
+        'line'
+      );
       renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Visualizar', labels2.value, data2.value, 'bar');
     });
 
     function renderChart(chartId, label, labels, data, type) {
-      const ctx = document.getElementById(chartId);
-      if (!ctx) return;
-      
-      new Chart(ctx, {
+      const canvas = document.getElementById(chartId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      if (chartInstances[chartId]) {
+        chartInstances[chartId].destroy();
+      }
+
+      chartInstances[chartId] = new Chart(ctx, {
         type: type,
         data: {
           labels: labels,
-          datasets: [{
-            label: label,
-            data: data,
-            backgroundColor: type === 'bar' ? ['#1E90FF', '#6495ED', '#87CEFA'] : 'rgba(58, 182, 255, 0.2)',
-            borderColor: '#3ab6ff',
-            borderWidth: 2,
-            fill: true
-          }]
+          datasets: Array.isArray(data[0]) ? 
+            [
+              {
+                label: `${label} - Planejado`,
+                data: data[0],
+                borderColor: '#004a6e',
+                borderWidth: 2,
+                fill: false
+              },
+              {
+                label: `${label} - Realizado`,
+                data: data[1],
+                borderColor: '#FF5733',
+                borderWidth: 2,
+                fill: false
+              }
+            ] : 
+            [{
+              label: label,
+              data: data,
+              backgroundColor: type === 'bar' 
+                ? ['#004a6e', '#00779d', '#00b2cf']
+                : 'rgba(58, 182, 255, 0.2)',
+              borderColor: '#3ab6ff',
+              borderWidth: 2,
+              fill: type !== 'bar'
+            }]
         },
         options: {
           responsive: true,
@@ -109,7 +160,11 @@ export default {
       });
     }
 
-    return { labels, data, labelsFinalizados, dataFinalizados, labelsCriados, dataCriados };
+    return { 
+      labels, labels2, data, data2, 
+      labelsFinalizados, dataPlanejado, dataRealizado, 
+      labelsCriados, dataCriados 
+    };
   }
 };
 </script>
@@ -207,7 +262,9 @@ html, body {
 }
 
 .bk-charts{
-  background: #8080801a
+  background: #8080801a;
+  display: flex;
+  flex-direction: row;
 }
 
 .charts {
@@ -218,6 +275,17 @@ html, body {
   height: 90vh;
   width: 50%;
   min-width: 500px;
+}
+
+.charts2 {
+  display: flex;
+  flex-direction: column;
+  height: 97%;
+  width: 89vh;
+  min-width: 500px;
+  background: white;
+  margin-top: 1vh;
+  border-radius: 10px;
 }
 
 .chart-group {
@@ -235,7 +303,7 @@ html, body {
 .chart-group2 {
   border-radius: 10px;
   width: 100%;
-  height: 40%;
+  height: 42%;
   margin-top: -1vh;
   display: flex;
   flex-direction: row;
@@ -291,10 +359,23 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 30vh;
+  height: 32vh;
   width: 94%;
   min-width: 430px;
   margin-left: 3%;
+}
+
+.chart-container3{
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 67vh;
+  width: 95%;
+  min-width: 430px;
 }
 
 .titulos {
