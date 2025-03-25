@@ -56,8 +56,8 @@
           </div>
         </div>
         <div class="charts2">
-          <div class="chart-group">
-          <p class="titulos">Projeto Atual</p>
+          <div class="chart-group3">
+          <p class="titulos3">Projeto Atual</p>
             <div class="cards-container">
               <div class="card" v-for="(label2, index) in labels2" :key="index">
                 <p>{{ label2 }}</p>
@@ -173,7 +173,7 @@ export default {
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  height: 100em;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -187,16 +187,15 @@ html, body {
 }
 
 .sidebar {
-  width: 85px;
+  width: 5em;
   background: #ffffff;
   border: 4px solid #E0E0EF;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px 2px;
+  padding: 1em 0em;
   justify-content: space-between;
-  height: 95vh;
-  min-height: 700px;
+  min-height: 97%;
   margin-left: -3px;
   margin-top: -3px;
 }
@@ -220,13 +219,13 @@ html, body {
 
 .sidebar-button {
   background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4em;
+    height: 6em;
 }
 
 .sidebar-button img {
@@ -243,8 +242,8 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 100vh;
-  min-width: 900px;
+  height: 63em;
+  min-width: 38em;
 }
 
 .header {
@@ -252,7 +251,7 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 0px 15px;
-  height: 6vh;
+  height: 2em;
   font-size: 25px;
   color: #3ab6ff;
   border: 4px solid #E0E0EF;
@@ -265,23 +264,23 @@ html, body {
   background: #8080801a;
   display: flex;
   flex-direction: row;
+  height: 59em;
+  width: 117em;
+  gap: 5px;
 }
 
 .charts {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 10px;
-  height: 90vh;
-  width: 50%;
-  min-width: 500px;
+  gap: 1em;
+  padding: 11px;
 }
 
 .charts2 {
   display: flex;
   flex-direction: column;
-  height: 97%;
-  width: 89vh;
+  height: 57em;
+  width: 56em;
   min-width: 500px;
   background: white;
   margin-top: 1vh;
@@ -293,21 +292,33 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 98%;
+  width: 57em;
   min-width: 460px;
   background: white;
   border-radius: 10px;
-  padding: 10px
+  padding: 8px;
 }
 
 .chart-group2 {
   border-radius: 10px;
-  width: 100%;
-  height: 42%;
-  margin-top: -1vh;
+  width: 58em;
+  height: 24em;
+  margin-top: 1px;
   display: flex;
   flex-direction: row;
-  gap: 1%;
+  gap: 1vh;
+}
+
+.chart-group3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 55em;
+  min-width: 460px;
+  background: white;
+  border-radius: 10px;
+  padding: 8px;
 }
 
 .chart-box {
@@ -320,7 +331,7 @@ html, body {
   justify-content: center;
   gap: 20px;
   flex-wrap: nowrap;
-  width: 85%;
+  width: 45em;
 }
 
 .card {
@@ -359,27 +370,26 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 32vh;
-  width: 94%;
-  min-width: 430px;
+  height: 20em;
+  width: 0em;
+  min-width: 27em;
   margin-left: 3%;
 }
 
-.chart-container3{
+.chart-container3 {
   background: #f9f9f9;
-  padding: 15px;
+  padding: 19px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 67vh;
-  width: 95%;
-  min-width: 430px;
+  height: 43em;
+  width: 52em;
 }
 
 .titulos {
-  width: 98%;
+  width: 57em;
   min-width: 450px;
   margin-top: 0vh;
   margin-bottom: 0vh;
@@ -387,13 +397,20 @@ html, body {
 }
 
 .titulos2 {
-  width: 98%;
-  min-width: 450px;
+  min-width: 29em;
   margin-top: 1vh;
   margin-bottom: 1vh;
   border-bottom: 1px solid #E0E0EF;
   margin-left: 1vh;
   margin-right: 0vh;
+}
+
+.titulos3 {
+  width: 55em;
+  min-width: 450px;
+  margin-top: 0vh;
+  margin-bottom: 0vh;
+  border-bottom: 1px solid #E0E0EF;
 }
 
 * {
