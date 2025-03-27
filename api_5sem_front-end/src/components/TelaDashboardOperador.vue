@@ -99,7 +99,7 @@ export default {
 
     onMounted(async () => {
       await nextTick();
-      renderChart('cardsPorEtiqueta', 'Etiquetas', labels.value, data.value, 'bar');
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart(
         'cardsFinalizados', 
         '', 
@@ -173,7 +173,7 @@ export default {
 html, body {
   margin: 0;
   padding: 0;
-  height: 100em;
+  height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -187,13 +187,12 @@ html, body {
 }
 
 .sidebar {
-  width: 5em;
+  width: 4rem;
   background: #ffffff;
   border: 4px solid #E0E0EF;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1em 0em;
   justify-content: space-between;
   min-height: 97%;
   margin-left: -3px;
@@ -204,33 +203,33 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 65px;
+  gap: 3em;
 }
 
 .logo {
   margin-bottom: 20px;
+  margin-top: 6px;
 }
 
 .icon-logo {
-  width: 82px;
-  height: 3vh;
+  width: 4em;
+  height: 2em;
   margin-bottom: 10vh;
 }
 
 .sidebar-button {
   background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4em;
-    height: 6em;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-button img {
-  width: 40px;
-  height: auto;
+  width: 3em;
+  height: 3em;
+  margin-bottom: 14px;
 }
 
 .logout {
@@ -242,7 +241,7 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 63em;
+  height: auto;
   min-width: 38em;
 }
 
@@ -264,27 +263,31 @@ html, body {
   background: #8080801a;
   display: flex;
   flex-direction: row;
-  height: 59em;
-  width: 117em;
-  gap: 5px;
+  height: 43em;
+  width: 87em;
+  gap: 4px;
 }
 
 .charts {
   display: flex;
   flex-direction: column;
-  gap: 1em;
-  padding: 11px;
+  gap: 6px;
+  padding: 5px;
+  width: 43em;
+  height: 42em;
 }
 
 .charts2 {
   display: flex;
   flex-direction: column;
-  height: 57em;
-  width: 56em;
+  height: 41em;
+  width: 41em;
   min-width: 500px;
   background: white;
-  margin-top: 1vh;
+  margin-top: 5px;
+  margin-left: 3px;
   border-radius: 10px;
+  padding: 8px;
 }
 
 .chart-group {
@@ -292,7 +295,8 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 57em;
+  width: 42em;
+  height: 22em;
   min-width: 460px;
   background: white;
   border-radius: 10px;
@@ -301,8 +305,8 @@ html, body {
 
 .chart-group2 {
   border-radius: 10px;
-  width: 58em;
-  height: 24em;
+  width: 43em;
+  height: 19em;
   margin-top: 1px;
   display: flex;
   flex-direction: row;
@@ -314,35 +318,40 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 55em;
-  min-width: 460px;
+  width: 41em;
+  height: 41em;
   background: white;
   border-radius: 10px;
-  padding: 8px;
+  padding: 2px;
 }
 
 .chart-box {
   background: white;
   border-radius: 10px;
+  width: 22em;
 }
 
 .cards-container {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 15px;
   flex-wrap: nowrap;
-  width: 45em;
+  width: 34em;
+  height: 5em;
 }
 
 .card {
+  display: flex;
   background: #3ab6ff;
-  padding: 10px 20px;
+  padding: 0px 25px;
   border-radius: 10px;
   text-align: center;
   color: white;
   font-weight: bold;
-  min-width: 100px;
-  width: 28%;
+  width: 6em;
+  height: 5em;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card-value {
@@ -352,15 +361,14 @@ html, body {
 
 .chart-container {
   background: #f9f9f9;
-  padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 29vh;
-  width: 95%;
-  min-width: 430px;
+  height: 14em;
+  width: 41em;
+  max-width: 800px;
 }
 
 .chart-container2 {
@@ -370,26 +378,24 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 20em;
-  width: 0em;
-  min-width: 27em;
+  height: 16em;
+  width: 20em;
   margin-left: 3%;
 }
 
 .chart-container3 {
   background: #f9f9f9;
-  padding: 19px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 43em;
-  width: 52em;
+  height: 34em;
+  width: 41em;
 }
 
 .titulos {
-  width: 57em;
+  width: 42em;
   min-width: 450px;
   margin-top: 0vh;
   margin-bottom: 0vh;
@@ -397,7 +403,6 @@ html, body {
 }
 
 .titulos2 {
-  min-width: 29em;
   margin-top: 1vh;
   margin-bottom: 1vh;
   border-bottom: 1px solid #E0E0EF;
@@ -406,8 +411,7 @@ html, body {
 }
 
 .titulos3 {
-  width: 55em;
-  min-width: 450px;
+  width: 41em;
   margin-top: 0vh;
   margin-bottom: 0vh;
   border-bottom: 1px solid #E0E0EF;
@@ -416,6 +420,5 @@ html, body {
 * {
   max-width: 100vw;
   max-height: 100vh;
-  overflow: hidden;
 }
 </style>
