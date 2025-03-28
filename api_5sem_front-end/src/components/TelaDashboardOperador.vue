@@ -100,13 +100,7 @@ export default {
     onMounted(async () => {
       await nextTick();
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
-      renderChart(
-        'cardsFinalizados', 
-        '', 
-        labelsFinalizados.value, 
-        [dataPlanejado.value, dataRealizado.value],
-        'line'
-      );
+      renderChart('cardsFinalizados', '', labelsFinalizados.value, [dataPlanejado.value, dataRealizado.value],'line');
       renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
       renderChart('projetoAtual', 'Visualizar', labels2.value, data2.value, 'bar');
     });
@@ -180,14 +174,14 @@ html, body {
 
 .container {
   display: flex;
-  height: 98vh;
+  height: 96vh;
+  width: 100%;
   background: white;
   overflow: hidden;
-  min-width: 1000px;
 }
 
 .sidebar {
-  width: 4rem;
+  width: auto;
   background: #ffffff;
   border: 4px solid #E0E0EF;
   display: flex;
@@ -250,7 +244,8 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 0px 15px;
-  height: 2em;
+  height: 7%;
+  width: 98%;
   font-size: 25px;
   color: #3ab6ff;
   border: 4px solid #E0E0EF;
@@ -259,12 +254,12 @@ html, body {
   margin-right: -4px;
 }
 
-.bk-charts{
+.bk-charts {
   background: #8080801a;
   display: flex;
   flex-direction: row;
-  height: 43em;
-  width: 87em;
+  height: 92%;
+  width: 100%;
   gap: 4px;
 }
 
@@ -273,21 +268,22 @@ html, body {
   flex-direction: column;
   gap: 6px;
   padding: 5px;
-  width: 43em;
-  height: 42em;
+  width: 51%;
+  height: 97%;
 }
+
 
 .charts2 {
   display: flex;
   flex-direction: column;
-  height: 41em;
-  width: 41em;
-  min-width: 500px;
+  height: 95%;
+  width: 91%;
   background: white;
   margin-top: 5px;
   margin-left: 3px;
+  margin-right: 6px;
   border-radius: 10px;
-  padding: 8px;
+  padding: 7px;
 }
 
 .chart-group {
@@ -295,8 +291,8 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 42em;
-  height: 22em;
+  width: 98%;
+  height: 62%;
   min-width: 460px;
   background: white;
   border-radius: 10px;
@@ -305,8 +301,8 @@ html, body {
 
 .chart-group2 {
   border-radius: 10px;
-  width: 43em;
-  height: 19em;
+  width: 101%;
+  height: 42%;
   margin-top: 1px;
   display: flex;
   flex-direction: row;
@@ -318,8 +314,8 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 41em;
-  height: 41em;
+  width: 100%;
+  height: 100%;
   background: white;
   border-radius: 10px;
   padding: 2px;
@@ -328,7 +324,8 @@ html, body {
 .chart-box {
   background: white;
   border-radius: 10px;
-  width: 22em;
+  width: 100%;
+  height: 100%;
 }
 
 .cards-container {
@@ -356,7 +353,7 @@ html, body {
 
 .card-value {
   font-size: 24px;
-  margin-top: 5px;
+  margin-top: -8px;
 }
 
 .chart-container {
@@ -366,8 +363,8 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 14em;
-  width: 41em;
+  height: 64%;
+  width: 99%;
   max-width: 800px;
 }
 
@@ -378,8 +375,8 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 16em;
-  width: 20em;
+  height: 83%;
+  width: 94%;
   margin-left: 3%;
 }
 
@@ -390,12 +387,12 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 34em;
-  width: 41em;
+  height: 81%;
+  width: 99%;
 }
 
 .titulos {
-  width: 42em;
+  width: 100%;
   min-width: 450px;
   margin-top: 0vh;
   margin-bottom: 0vh;
@@ -411,7 +408,7 @@ html, body {
 }
 
 .titulos3 {
-  width: 41em;
+  width: 100%;
   margin-top: 0vh;
   margin-bottom: 0vh;
   border-bottom: 1px solid #E0E0EF;
