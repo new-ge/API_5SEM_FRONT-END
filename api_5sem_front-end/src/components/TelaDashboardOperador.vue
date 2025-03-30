@@ -83,8 +83,8 @@ Chart.register(...registerables);
 
 export default {
   setup() {
-    const labels = ref(['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']);
-    const data = ref([3, 1, 10]);
+    const labels = ref([]);
+    const data = ref([]);
 
     const labelsFinalizados = ref([]);
     const dataFinalizados = ref([]);
@@ -171,8 +171,19 @@ export default {
       }
     };
 
+    const fetchData2 = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714');
+        labels.value = Object.keys(response.data);
+        data.value = Object.values(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
     onMounted(async () => {
       await Promise.all([
+        fetchData2('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714', labels2, data2),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
         fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
         fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
