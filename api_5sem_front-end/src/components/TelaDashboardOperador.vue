@@ -86,12 +86,11 @@ export default {
     const labels = ref(['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']);
     const data = ref([3, 1, 10]);
 
-    const labelsFinalizados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
-    const dataPlanejado = ref([5, 10, 7]);
-    const dataRealizado = ref([2, 6, 12]);
+    const labelsFinalizados = ref([]);
+    const dataFinalizados = ref([]);
 
-    const labelsCriados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
-    const dataCriados = ref([2, 8, 12]);
+    const labelsCriados = ref([]);
+    const dataCriados = ref([]);
 
     const labels2 = ref([]);
     const data2 = ref([]);
@@ -156,28 +155,40 @@ export default {
       });
     }
 
-    const fetchData = async () => {
+    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
       try {
-        const response = await axios.get('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714');
-        labels2.value = Object.keys(response.data);
-        data2.value = Object.values(response.data);
+        const response = await axios.get(url);     
+        if (typeof response.data === 'number') {
+          dataRef.value = [response.data];
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          labelsRef.value = Object.keys(response.data);
+          dataRef.value = isMultiDataset 
+            ? dataRef.value = (Object.values(response.data).map(item => item.values)) 
+            : dataRef.value = Object.values(response.data);
+        }
       } catch (error) {
-        console.error('Erro ao buscar dados:', error);
+        console.error("Erro ao buscar dados de ${url}:", error);
       }
     };
 
     onMounted(async () => {
-      await fetchData();
+      await Promise.all([
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
+        fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint/758714/1641986', labelsCriados, dataCriados)
+      ]);
+
       await nextTick();
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
-      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, [dataPlanejado.value, dataRealizado.value], 'line');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
       renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
       renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
     });
 
     return { 
       labels, labels2, data, data2, 
-      labelsFinalizados, dataPlanejado, dataRealizado, 
+      labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados 
     };
   }
