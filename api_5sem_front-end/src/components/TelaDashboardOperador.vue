@@ -77,39 +77,38 @@
 <script>
 import { Chart, registerables } from 'chart.js';
 import { onMounted, ref, nextTick } from 'vue';
+import axios from 'axios';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
-    const labels = ref(['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']);
-    const data = ref([3, 1, 10]);
+    const labels = ref([]);
+    const data = ref([]);
 
-    const labelsFinalizados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
-    const dataPlanejado = ref([5, 10, 7]);
-    const dataRealizado = ref([2, 6, 12]);
+    const labelsFinalizados = ref([]);
+    const dataFinalizados = ref([]);
 
-    const labelsCriados = ref(['Sprint 1', 'Sprint 2', 'Sprint 3']);
-    const dataCriados = ref([2, 8, 12]);
+    const labelsCriados = ref([]);
+    const dataCriados = ref([]);
 
-    const labels2 = ref(['To do', 'In progress', 'Done']);
-    const data2 = ref([2, 9, 5]);
+    const labels2 = ref([]);
+    const data2 = ref([]);
 
     const chartInstances = {};
 
-    onMounted(async () => {
-      await nextTick();
-      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
-      renderChart('cardsFinalizados', '', labelsFinalizados.value, [dataPlanejado.value, dataRealizado.value],'line');
-      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
-      renderChart('projetoAtual', 'Visualizar', labels2.value, data2.value, 'bar');
-    });
-
     function renderChart(chartId, label, labels, data, type) {
       const canvas = document.getElementById(chartId);
-      if (!canvas) return;
+      if (!canvas) {
+        console.warn(`Canvas com ID '${chartId}' não encontrado.`);
+        return;
+      }
 
       const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error(`Erro ao obter contexto 2D para '${chartId}'.`);
+        return;
+      }
 
       if (chartInstances[chartId]) {
         chartInstances[chartId].destroy();
@@ -119,33 +118,35 @@ export default {
         type: type,
         data: {
           labels: labels,
-          datasets: Array.isArray(data[0]) ? 
-            [
-              {
-                label: `${label} - Planejado`,
-                data: data[0],
-                borderColor: '#004a6e',
-                borderWidth: 2,
-                fill: false
-              },
-              {
-                label: `${label} - Realizado`,
-                data: data[1],
-                borderColor: '#FF5733',
-                borderWidth: 2,
-                fill: false
-              }
-            ] : 
-            [{
-              label: label,
-              data: data,
-              backgroundColor: type === 'bar' 
-                ? ['#004a6e', '#00779d', '#00b2cf']
-                : 'rgba(58, 182, 255, 0.2)',
-              borderColor: '#3ab6ff',
-              borderWidth: 2,
-              fill: type !== 'bar'
-            }]
+          datasets: Array.isArray(data[0])
+            ? [
+                {
+                  label: `${label} - Planejado`,
+                  data: data[0],
+                  borderColor: '#004a6e',
+                  borderWidth: 2,
+                  fill: false
+                },
+                {
+                  label: `${label} - Realizado`,
+                  data: data[1],
+                  borderColor: '#FF5733',
+                  borderWidth: 2,
+                  fill: false
+                }
+              ]
+            : [
+                {
+                  label: label,
+                  data: data,
+                  backgroundColor: type === 'bar' 
+                    ? ['#004a6e', '#00779d', '#00b2cf'] 
+                    : 'rgba(58, 182, 255, 0.2)',
+                  borderColor: '#3ab6ff',
+                  borderWidth: 2,
+                  fill: type !== 'bar'
+                }
+              ]
         },
         options: {
           responsive: true,
@@ -154,9 +155,51 @@ export default {
       });
     }
 
+    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
+      try {
+        const response = await axios.get(url);     
+        if (typeof response.data === 'number') {
+          dataRef.value = [response.data];
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          labelsRef.value = Object.keys(response.data);
+          dataRef.value = isMultiDataset 
+            ? dataRef.value = (Object.values(response.data).map(item => item.values)) 
+            : dataRef.value = Object.values(response.data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados de ${url}:", error);
+      }
+    };
+
+    const fetchData2 = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714');
+        labels.value = Object.keys(response.data);
+        data.value = Object.values(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    onMounted(async () => {
+      await Promise.all([
+        fetchData2('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714', labels2, data2),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
+        fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint/758714/1641986', labelsCriados, dataCriados)
+      ]);
+
+      await nextTick();
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+    });
+
     return { 
       labels, labels2, data, data2, 
-      labelsFinalizados, dataPlanejado, dataRealizado, 
+      labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados 
     };
   }
@@ -268,7 +311,7 @@ html, body {
   flex-direction: column;
   gap: 6px;
   padding: 5px;
-  width: 51%;
+  width: 100%;
   height: 97%;
 }
 
@@ -301,7 +344,7 @@ html, body {
 
 .chart-group2 {
   border-radius: 10px;
-  width: 101%;
+  width: 100%;
   height: 42%;
   margin-top: 1px;
   display: flex;
@@ -345,8 +388,8 @@ html, body {
   text-align: center;
   color: white;
   font-weight: bold;
-  width: 6em;
-  height: 5em;
+  width: 20%;
+  height: 100%;
   flex-direction: column;
   justify-content: center;
 }
@@ -375,7 +418,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 83%;
+  height: 81%;
   width: 94%;
   margin-left: 3%;
 }
@@ -387,7 +430,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 81%;
+  height: 78%;
   width: 99%;
 }
 
