@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="container">
     <div class="logo-container">
       <img :src="logoSrc" alt="Logo Vision" class="logo" />
     </div>
@@ -42,54 +42,55 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.login-container {
-  height: 96vh;
-  background-color: white;
+.container {
+  width: 98vw;
+  height: 97vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .logo-container {
-  margin-bottom: -10%;
-  margin-top: -12%;
+
 }
 
 .logo {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  margin-bottom: -9%;
+  width: 25vw;
+  margin-top: -14vw;
+  margin-bottom: -10vh;
 }
 
 .login-box {
   background-color: #ffffff;
   padding: 2rem;
-  border-radius: 5%;
+  border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  width: 20%;
-  margin-bottom: 5%;
+  width: 27%;
+  height: 40%;
+  max-width: 314px;
+  max-height: 293px;
   text-align: center;
 }
 
 .login-box h1 {
   margin-bottom: 1.5rem;
   color: #333;
+  font-size: 1.5rem;
 }
 
 .login-box input {
-  width: 93%;
-  padding: 3%;
-  margin-bottom: 5%;
+  width: 92%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  display: flex;
-  justify-content: center;
 }
 
 .login-box button {
   width: 100%;
+  margin-top: 6%;
   padding: 0.75rem;
   background-color: #4a90e2;
   color: white;
@@ -103,4 +104,19 @@ export default defineComponent({
 .login-box button:hover {
   background-color: #357ab8;
 }
+
+@media (max-width: 600px) {
+  .login-box {
+    padding: 1.5rem;
+  }
+
+  .login-box h1 {
+    font-size: 1.25rem;
+  }
+
+  .logo {
+    max-width: 180px;
+  }
+}
+
 </style>
