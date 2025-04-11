@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import TelaHome from './components/TelaHome.vue'; 
 import TelaDashboardOperador from './components/TelaDashboardOperador.vue';
+import TelaLogin from './components/TelaLogin.vue';
 
 const routes = [
   {
-    path: '/',
+    path: '/Home',
     name: 'Home',
     component: TelaHome
   },
@@ -12,6 +13,11 @@ const routes = [
     path: '/ResultadosDoOperador',
     name: 'ResultadosDoOperador',
     component: TelaDashboardOperador
+  },
+  {
+    path: '/',
+    name: 'TelaDeLogin',
+    component: TelaLogin
   }
 ];
 
