@@ -26,7 +26,7 @@
         <p class="title">Resultados</p>
         <span class="user-role">Operador</span>
       </header>
-      <div class="bk-charts">
+      <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
           <p class="titulos">Cards por Etiqueta</p>
@@ -54,21 +54,40 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="charts2">
-          <div class="chart-group3">
-          <p class="titulos3">Projeto Atual</p>
-            <div class="cards-container">
-              <div class="card" v-for="(label2, index) in labels2" :key="index">
-                <p>{{ label2 }}</p>
-                <p class="card-value">{{ data2[index] }}</p>
+        </div>  
+        <div class="charts1">
+          <div class="charts2">
+            <div class="chart-group3">
+            <p class="titulos3">Projeto Atual</p>
+              <div class="cards-container">
+                <div class="card" v-for="(label2, index) in labels2" :key="index">
+                  <p>{{ label2 }}</p>
+                  <p class="card-value">{{ data2[index] }}</p>
+                </div>
+              </div>
+              <div class="chart-container3">
+                <canvas id="projetoAtual"></canvas>
               </div>
             </div>
-            <div class="chart-container3">
-              <canvas id="projetoAtual"></canvas>
+          </div>
+
+          <div class="chart-group4">
+            <div class="card">
+              <div class="title">Retrabalhos</div>
+              <canvas id="reworkChart"></canvas>
+            </div>
+            <div class="chart-box2">
+              <p class="titulos2">Tempo Médio de Execução</p>
+              <div class="chart-container2">
+
+              </div>
             </div>
           </div>
+
         </div>
+
+
+
       </div>
     </main>
   </div>
@@ -163,19 +182,19 @@ export default {
         } else if (typeof response.data === 'object' && response.data !== null) {
           labelsRef.value = Object.keys(response.data);
           dataRef.value = isMultiDataset 
-            ? dataRef.value = (Object.values(response.data).map(item => item.values)) 
-            : dataRef.value = Object.values(response.data);
+            ? Object.values(response.data).map(item => item.values) 
+            : Object.values(response.data);
         }
       } catch (error) {
-        console.error("Erro ao buscar dados de ${url}:", error);
+        console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
 
-    const fetchData2 = async () => {
+    const fetchData2 = async (labelsRef, dataRef) => {
       try {
         const response = await axios.get('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714');
-        labels.value = Object.keys(response.data);
-        data.value = Object.values(response.data);
+        labelsRef.value = Object.keys(response.data);
+        dataRef.value = Object.values(response.data);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
       }
@@ -183,7 +202,7 @@ export default {
 
     onMounted(async () => {
       await Promise.all([
-        fetchData2('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714', labels2, data2),
+        fetchData2(labels2, data2),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
         fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
         fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
@@ -301,32 +320,35 @@ html, body {
   background: #8080801a;
   display: flex;
   flex-direction: row;
-  height: 92%;
+  height: 93%;
   width: 100%;
-  gap: 4px;
 }
 
 .charts {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   padding: 5px;
-  width: 100%;
-  height: 97%;
+  width: 50%;
+  height: 100%;
+  gap: 1%;
 }
 
+.charts1{
+  width: 49%;
+  height: 98%;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
 
 .charts2 {
   display: flex;
   flex-direction: column;
-  height: 95%;
-  width: 91%;
+  height: 49%;
+  width: 98%;
   background: white;
-  margin-top: 5px;
-  margin-left: 3px;
-  margin-right: 6px;
   border-radius: 10px;
-  padding: 7px;
+  padding: 1%;
 }
 
 .chart-group {
@@ -335,21 +357,31 @@ html, body {
   align-items: center;
   gap: 10px;
   width: 98%;
-  height: 62%;
+  height: 48%;
   min-width: 460px;
   background: white;
   border-radius: 10px;
-  padding: 8px;
+  padding: 1%;
 }
 
 .chart-group2 {
   border-radius: 10px;
   width: 100%;
-  height: 42%;
+  height: 47%;
   margin-top: 1px;
   display: flex;
   flex-direction: row;
   gap: 1vh;
+}
+
+#cardsFinalizados {
+  width: 95% !important;
+  height: 100% !important;
+}
+
+#cardsCriados {
+  width: 95% !important;
+  height: 100% !important;
 }
 
 .chart-group3 {
@@ -364,6 +396,21 @@ html, body {
   padding: 2px;
 }
 
+.chart-group4{
+  border-radius: 10px;
+  width: 100%;
+  height: 48%;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 1vh;
+}
+
+#projetoAtual {
+  width: 95% !important;
+  height: 100% !important;
+}
+
 .chart-box {
   background: white;
   border-radius: 10px;
@@ -371,13 +418,20 @@ html, body {
   height: 100%;
 }
 
+.chart-box2 {
+    background: white;
+    border-radius: 10px;
+    width: 50%;
+    height: 100%;
+}
+
 .cards-container {
   display: flex;
   justify-content: center;
   gap: 15px;
   flex-wrap: nowrap;
-  width: 34em;
-  height: 5em;
+  width: 99%;
+  height: 25%;
 }
 
 .card {
@@ -406,9 +460,13 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 64%;
+  height: 60%;
   width: 99%;
-  max-width: 800px;
+}
+
+#cardsPorEtiqueta {
+  width: 95% !important;
+  height: 100% !important;
 }
 
 .chart-container2 {
@@ -418,7 +476,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 81%;
+  height: 85%;
   width: 94%;
   margin-left: 3%;
 }
@@ -426,11 +484,11 @@ html, body {
 .chart-container3 {
   background: #f9f9f9;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(255, 42, 42, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 78%;
+  height: 60%;
   width: 99%;
 }
 
