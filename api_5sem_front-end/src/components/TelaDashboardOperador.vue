@@ -72,9 +72,11 @@
           </div>
 
           <div class="chart-group4">
-            <div class="card">
-              <div class="title">Retrabalhos</div>
-              <canvas id="reworkChart"></canvas>
+            <div class="chart-box2">
+              <div class="titulos2">Retrabalhos</div>
+              <div class="chart-container2">
+                <canvas id="Retrabalhos"></canvas>
+              </div>
             </div>
             <div class="chart-box2">
               <p class="titulos2">Tempo Médio de Execução</p>
@@ -109,10 +111,13 @@ export default {
     const dataFinalizados = ref([]);
 
     const labelsCriados = ref([]);
-    const dataCriados = ref([]);
+    const dataCriados = ref([]);  
 
     const labels2 = ref([]);
     const data2 = ref([]);
+
+    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
+    const dataRetrabalhos = ref([10, 45]);
 
     const chartInstances = {};
 
@@ -209,17 +214,19 @@ export default {
         fetchData('http://localhost:8080/tasks/tasks-per-sprint/758714/1641986', labelsCriados, dataCriados)
       ]);
 
-      await nextTick();
+      await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
       renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
       renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Retrabalhos', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
     });
 
     return { 
       labels, labels2, data, data2, 
       labelsFinalizados, dataFinalizados, 
-      labelsCriados, dataCriados 
+      labelsCriados, dataCriados,
+      labelsRetrabalhos, dataRetrabalhos,
     };
   }
 };
@@ -432,20 +439,6 @@ html, body {
   flex-wrap: nowrap;
   width: 99%;
   height: 25%;
-}
-
-.card {
-  display: flex;
-  background: #3ab6ff;
-  padding: 0px 25px;
-  border-radius: 10px;
-  text-align: center;
-  color: white;
-  font-weight: bold;
-  width: 20%;
-  height: 100%;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .card-value {
