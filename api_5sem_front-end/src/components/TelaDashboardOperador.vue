@@ -70,7 +70,6 @@
               </div>
             </div>
           </div>
-
           <div class="chart-group4">
             <div class="chart-box2">
               <div class="titulos2">Retrabalhos</div>
@@ -81,15 +80,11 @@
             <div class="chart-box2">
               <p class="titulos2">Tempo Médio de Execução</p>
               <div class="chart-container2">
-
+                <canvas id="TempoMedio"></canvas>
               </div>
             </div>
           </div>
-
         </div>
-
-
-
       </div>
     </main>
   </div>
@@ -104,6 +99,9 @@ Chart.register(...registerables);
 
 export default {
   setup() {
+    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
+    const dataTempoMedio = ref([9, 3, 2, 5]);
+    
     const labels = ref([]);
     const data = ref([]);
 
@@ -122,6 +120,7 @@ export default {
     const chartInstances = {};
 
     function renderChart(chartId, label, labels, data, type) {
+      
       const canvas = document.getElementById(chartId);
       if (!canvas) {
         console.warn(`Canvas com ID '${chartId}' não encontrado.`);
@@ -164,17 +163,21 @@ export default {
                   label: label,
                   data: data,
                   backgroundColor: type === 'bar' 
-                    ? ['#004a6e', '#00779d', '#00b2cf'] 
-                    : 'rgba(58, 182, 255, 0.2)',
-                  borderColor: '#3ab6ff',
-                  borderWidth: 2,
-                  fill: type !== 'bar'
+                  ? ['#004a6e', '#00779d', '#00b2cf']
+                  : ['#00b2cf', '#004a6e'],
                 }
               ]
         },
         options: {
+          indexAxis: chartId === 'TempoMedio' ? 'y' : 'x',
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          scales: {
+            y:{
+              barPercentage: 1,
+              categoryPercentage: 1
+            }
+          }
         }
       });
     }
@@ -208,6 +211,7 @@ export default {
     onMounted(async () => {
       await Promise.all([
         fetchData2(labels2, data2),
+        fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
         fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
         fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
@@ -219,11 +223,12 @@ export default {
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
       renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
       renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
-      renderChart('Retrabalhos', 'Retrabalhos', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
     });
 
-    return { 
-      labels, labels2, data, data2, 
+    return {
+      labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
@@ -485,12 +490,24 @@ html, body {
   width: 99%;
 }
 
+.card{
+  height: 100%;
+  background: #00779d;
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 10px;
+}
+
 .titulos {
   width: 100%;
   min-width: 450px;
   margin-top: 0vh;
   margin-bottom: 0vh;
   border-bottom: 1px solid #E0E0EF;
+  color: black
 }
 
 .titulos2 {
@@ -499,6 +516,7 @@ html, body {
   border-bottom: 1px solid #E0E0EF;
   margin-left: 1vh;
   margin-right: 0vh;
+  color: black
 }
 
 .titulos3 {
@@ -506,6 +524,11 @@ html, body {
   margin-top: 0vh;
   margin-bottom: 0vh;
   border-bottom: 1px solid #E0E0EF;
+  color: black
+}
+
+p {
+  color: white;
 }
 
 * {
