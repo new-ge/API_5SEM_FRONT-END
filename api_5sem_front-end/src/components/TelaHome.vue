@@ -2,7 +2,13 @@
   <div class="home-container">
     <h1>Bem-vindo</h1>
     <router-link to="/ResultadosDoOperador">
-      <button class="btn-resultados">Ver Resultados</button>
+      <button class="btn-resultados">Operador</button>
+    </router-link>
+    <router-link to="/ResultadosDoGestor">
+      <button class="btn-resultados">Gestor</button>
+    </router-link>
+    <router-link to="/ResultadosDoAdmin">
+      <button class="btn-resultados">Administrador</button>
     </router-link>
   </div>
 </template>
@@ -16,6 +22,7 @@
   height: 100vh;
   text-align: center;
   background-color: #f0f0f0;
+  gap: 10px;
 }
 
 .btn-resultados {
@@ -27,6 +34,7 @@
   border: none;
   border-radius: 5px;
   transition: 0.3s;
+  width: 150px;
 }
 
 .btn-resultados:hover {
