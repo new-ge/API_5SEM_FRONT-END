@@ -9,7 +9,9 @@
       <form @submit.prevent="handleLogin">
         <input type="text" v-model="username" placeholder="Usuário do Taiga" required />
         <input type="password" v-model="password" placeholder="Senha do Taiga" required />
-        <button type="submit">Entrar</button>
+        <router-link to="/Home">  
+          <button type="submit">Entrar</button>
+        </router-link>
       </form>
     </div>
   </div>
