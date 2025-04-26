@@ -26,6 +26,27 @@
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
+        
+        <div class="filters">
+            <select v-model="selectedProject" @change="onProjectChange">
+              <option disabled value="">Selecione um Projeto</option>
+              <option v-for="project in projectList" :key="project.id" :value="project.id">
+                {{ project.name }}
+              </option>
+            </select>
+            <select  v-model="selectedOperator">
+              <option disabled value="">Selecione um Operador</option>
+              <option v-for="operator in operatorList" :key= "operator.id" :value="operator.id">
+                {{ operator.name }}
+              </option>
+            </select>
+            <select v-model="selectedSprint">
+              <option disabled value="">Selecione uma Sprint</option>
+              <option v-for="sprint in sprintList" :key="sprint.id" :value="sprint.name">
+                {{ sprint.name }}
+              </option>
+            </select>
+        </div>
         <span class="user-role">Gestor</span>
       </header>
       <div class="bk-charts">        
@@ -121,6 +142,49 @@ export default {
     const dataTempoMedio = ref([9, 3, 2, 5]);
 
     const chartInstances = {};
+    const selectedProject = ref('');
+    const selectedOperator = ref('');
+    const selectedSprint = ref('');
+
+    const projectList = ref ([]);
+    const operatorList = ref ([]);
+    const sprintList = ref ([]);
+
+    const userId = 758714; // Substituir pelo ID real que você tiver
+
+    const fetchProjects = async () => {
+      const res = await axios.get(`http://localhost:8080/projects/get-all-projects/${userId}`);
+      projectList.value = res.data;
+    }
+
+    const fetchOperators = async (projectId) => {
+      const res = await axios.get(`http://localhost:8080/users/users-and-tasks/project/${projectId}`);
+      operatorList.value = res.data.map(op => ({
+        id: op.user.userCode,
+        name: op.user.userName
+      }));
+    }
+
+  const fetchSprints = async (projectId) => {
+    const token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ1NjQ3MTY2LCJqdGkiOiIwNmZhMzRmZWYyOTg0YmQ4OTJhMGExNDhhYmYyMWVjMCIsInVzZXJfaWQiOjc1ODcxNH0.fSVoDQAkgl683EbvwiUJVCaWXvjtxoYWm-QcKhADRUuN_YAalnGbjjJDsuRbtydcQUyPnIWxCYX4yVkASVHeH5Do3sFrdutrfyjzJ0hkazFICAzZpvgtN4Rk_rBZR3IwFMPQWD7zpZoO_0GkH2J90xq5Py9q9L0ZYq52J3PFFhgXtxS5Az3ijTGFi1MfjSqXixhehlEPco5CDzHRHqvsvMaey0bw8oJQSqkK9gSBEc7Qs1379uHchzajIQGQWNiovrrS3wqOSjZhX4zgOEgxaIIef4JExJ-YBBlYOputNJJkIkOJIyV0Ty6jUO0iIfejDxe49Kg5wr6GKdvxaWqWXg'; // ou localStorage.getItem('token'), etc.
+    //alterar aqui - verificar o token e colocar outro se necessário para testar.
+    const res = await axios.get(`https://api.taiga.io/api/v1/milestones?project=${projectId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    sprintList.value = res.data.map(s => ({
+      id: s.id,
+      name: s.name
+    }));
+  }
+    const onProjectChange = async () => {
+      await Promise.all([
+        fetchOperators(selectedProject.value),
+        fetchSprints(selectedProject.value)
+      ]);
+    };
 
     function renderChart(chartId, label, labels, data, type) {
       
@@ -187,7 +251,13 @@ export default {
 
     const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
       try {
-        const response = await axios.get(url);     
+        const response = await axios.get(url,{
+          params:{
+            projeto: selectedProject.value,
+            operador: selectedOperator.value,
+            sprint: selectedSprint.value
+          }
+        });     
         if (typeof response.data === 'number') {
           dataRef.value = [response.data];
         } else if (typeof response.data === 'object' && response.data !== null) {
@@ -202,6 +272,7 @@ export default {
     };
 
     onMounted(async () => {
+      await fetchProjects();
       await Promise.all([
       fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
@@ -224,6 +295,9 @@ export default {
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
+      selectedProject, selectedOperator, selectedSprint, 
+      projectList, operatorList, sprintList,
+      onProjectChange
     };
   }
 };
@@ -318,6 +392,30 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
+  background-color: #ffffff; /* Fundo branco */
+  filter: brightness(1.1) contrast(1.2); /* Filtro aplicado no header */
+
+}
+.filters select{
+  border:2px solid #00779d;
+  border-radius: 5px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  transition: filter 0.3s ease-in-out;
+}
+.filters select:hover {
+  filter: brightness(1.2) contrast(1.3); /* Filtro para quando o select for hover */
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+}
+
+.user-role {
+  font-size: 18px;
+  color: #3ab6ff;
+  margin-left: 15px;
 }
 
 .bk-charts {
