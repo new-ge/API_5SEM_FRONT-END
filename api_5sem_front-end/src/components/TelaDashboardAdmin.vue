@@ -200,24 +200,13 @@ export default {
       }
     };
 
-    const fetchData2 = async (labelsRef, dataRef) => {
-      try {
-        const response = await axios.get('');
-        labelsRef.value = Object.keys(response.data);
-        dataRef.value = Object.values(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-      }
-    };
-
     onMounted(async () => {
       await Promise.all([
-        fetchData2(labels2, data2),
-        fetchData('', labelsTempoMedio, dataTempoMedio),
-        fetchData('', labels2, data2),
-        fetchData('', labels, data),
-        fetchData('', labelsFinalizados, dataFinalizados),
-        fetchData('', labelsCriados, dataCriados)
+        fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
       ]);
 
       await nextTick(); 
