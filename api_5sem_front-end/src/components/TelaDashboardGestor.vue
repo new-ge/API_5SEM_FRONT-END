@@ -203,11 +203,12 @@ export default {
 
     onMounted(async () => {
       await Promise.all([
-      fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
+        fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
         fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados),
+        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos)
       ]);
 
       await nextTick(); 
