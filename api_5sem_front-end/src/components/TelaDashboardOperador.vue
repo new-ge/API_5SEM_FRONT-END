@@ -98,10 +98,7 @@ import axios from 'axios';
 Chart.register(...registerables);
 
 export default {
-  setup() {
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
-    
+  setup() {    
     const labels = ref([]);
     const data = ref([]);
 
@@ -116,6 +113,9 @@ export default {
 
     const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
     const dataRetrabalhos = ref([10, 45]);
+
+    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
+    const dataTempoMedio = ref([9, 3, 2, 5]);
 
     const chartInstances = {};
 
@@ -198,24 +198,13 @@ export default {
       }
     };
 
-    const fetchData2 = async (labelsRef, dataRef) => {
-      try {
-        const response = await axios.get('http://localhost:8080/tasks/count-tasks-by-tag/1641986/758714');
-        labelsRef.value = Object.keys(response.data);
-        dataRef.value = Object.values(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-      }
-    };
-
     onMounted(async () => {
       await Promise.all([
-        fetchData2(labels2, data2),
         fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status/1641986/758714', labels2, data2),
-        fetchData('http://localhost:8080/tasks/count-by-labels', labels, data),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed/758714/1641986', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint/758714/1641986', labelsCriados, dataCriados)
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
       ]);
 
       await nextTick(); 
