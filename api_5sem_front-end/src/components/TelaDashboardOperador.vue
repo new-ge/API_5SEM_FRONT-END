@@ -15,7 +15,7 @@
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
-      <router-link to="/TelaDeLogin">
+      <router-link to="/">
       <button class="sidebar-button logout">
         <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>

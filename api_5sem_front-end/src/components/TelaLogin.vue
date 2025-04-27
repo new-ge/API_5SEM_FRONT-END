@@ -39,19 +39,16 @@ export default defineComponent({
           },
 
         headers: {
-        'Content-Type': 'application/json',  // Garantir que o backend espera JSON
+        'Content-Type': 'application/json',
         }
         });
 
-        const { token } = response.data;
-        const role = response.data;
-
-        // Salva o token no localStorage
-        localStorage.setItem('authToken', token);
+        const { token, role } = response.data;
+        
+        localStorage.setItem('authToken', token.value);
         localStorage.setItem('username', username.value);
-        localStorage.setItem('role', role);
-
-        // Decide para onde enviar
+        localStorage.setItem('role', role.value);
+        
         if (role === 'PRODUCT OWNER') {
           router.push('/ResultadosdoOperador');
         } else if (role === 'STAKEHOLDER') {
