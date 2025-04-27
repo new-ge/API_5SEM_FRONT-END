@@ -18,41 +18,44 @@
         </button>
       </div>
       <router-link to="/TelaDeLogin">
-      <button class="sidebar-button logout">
-        <img src="/logoutLogo.ico" alt="Sair" class="icon">
-      </button>
+        <button class="sidebar-button logout">
+          <img src="/logoutLogo.ico" alt="Sair" class="icon">
+        </button>
       </router-link>
     </aside>
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
-        
         <div class="filters">
-            <select v-model="selectedProject" @change="onProjectChange">
-              <option disabled value="">Selecione um Projeto</option>
-              <option v-for="project in projectList" :key="project.id" :value="project.id">
-                {{ project.name }}
-              </option>
-            </select>
-            <select  v-model="selectedOperator">
-              <option disabled value="">Selecione um Operador</option>
-              <option v-for="operator in operatorList" :key= "operator.id" :value="operator.id">
-                {{ operator.name }}
-              </option>
-            </select>
-            <select v-model="selectedSprint">
-              <option disabled value="">Selecione uma Sprint</option>
-              <option v-for="sprint in sprintList" :key="sprint.id" :value="sprint.name">
-                {{ sprint.name }}
-              </option>
-            </select>
+          <label for="project-select">Selecione o Projeto:</label>
+          <select id="project-select" v-model="selectedProject" @change="onProjectChange">
+            <option v-for="project in projectList" :key="project.projectName" :value="project.projectName">
+              {{ project.projectName }}
+            </option>
+          </select>
+
+          <label for="sprint-select">Selecione a Sprint:</label>
+          <select id="sprint-select" v-model="selectedSprint" @change="onSprintChange">
+            <option v-for="sprint in sprintList" :key="sprint.id" :value="sprint.id">
+              {{ sprint.name }}
+            </option>
+          </select>
+
+          <label for="operator-select">Selecione o Operador:</label>
+          <select id="operator-select" v-model="selectedOperator">
+            <option v-for="operator in operatorList" :key="operator.id" :value="operator.id">
+              {{ operator.name }}
+            </option>
+          </select>
+
+          <button @click="clearFilters">Limpar Filtros</button>
         </div>
         <span class="user-role">Gestor</span>
       </header>
-      <div class="bk-charts">        
+      <div class="bk-charts">
         <div class="charts">
           <div class="chart-group">
-          <p class="titulos">Cards por Etiqueta</p>
+            <p class="titulos">Cards por Etiqueta</p>
             <div class="cards-container">
               <div class="card" v-for="(label, index) in labels" :key="index">
                 <p>{{ label }}</p>
@@ -77,11 +80,11 @@
               </div>
             </div>
           </div>
-        </div>  
+        </div>
         <div class="charts1">
           <div class="charts2">
             <div class="chart-group3">
-            <p class="titulos3">Projeto Atual</p>
+              <p class="titulos3">Projeto Atual</p>
               <div class="cards-container">
                 <div class="card" v-for="(label2, index) in labels2" :key="index">
                   <p>{{ label2 }}</p>
@@ -115,79 +118,122 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick, watch } from 'vue';
 import axios from 'axios';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
-    
     const labels = ref([]);
     const data = ref([]);
-
     const labelsFinalizados = ref([]);
     const dataFinalizados = ref([]);
-
     const labelsCriados = ref([]);
     const dataCriados = ref([]);  
-
     const labels2 = ref([]);
     const data2 = ref([]);
-
     const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
     const dataRetrabalhos = ref([10, 45]);
-
     const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
     const dataTempoMedio = ref([9, 3, 2, 5]);
 
     const chartInstances = {};
-    const selectedProject = ref('');
-    const selectedOperator = ref('');
-    const selectedSprint = ref('');
+    const selectedProject = ref(localStorage.getItem('selectedProject') || '');
+    const selectedOperator = ref(localStorage.getItem('selectedOperator') || '');
+    const selectedSprint = ref(localStorage.getItem('selectedSprint') || '');
 
-    const projectList = ref ([]);
-    const operatorList = ref ([]);
-    const sprintList = ref ([]);
+    const projectList = ref([]);
+    const operatorList = ref([]);
+    const sprintList = ref([]);
 
-    const userId = 758714; // Substituir pelo ID real que você tiver
+    //const filteredData = ref([]);
 
-    const fetchProjects = async () => {
-      const res = await axios.get(`http://localhost:8080/projects/get-all-projects/${userId}`);
-      projectList.value = res.data;
-    }
-
-    const fetchOperators = async (projectId) => {
-      const res = await axios.get(`http://localhost:8080/users/users-and-tasks/project/${projectId}`);
-      operatorList.value = res.data.map(op => ({
-        id: op.user.userCode,
-        name: op.user.userName
-      }));
-    }
-
-  const fetchSprints = async (projectId) => {
-    const token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ1NjQ3MTY2LCJqdGkiOiIwNmZhMzRmZWYyOTg0YmQ4OTJhMGExNDhhYmYyMWVjMCIsInVzZXJfaWQiOjc1ODcxNH0.fSVoDQAkgl683EbvwiUJVCaWXvjtxoYWm-QcKhADRUuN_YAalnGbjjJDsuRbtydcQUyPnIWxCYX4yVkASVHeH5Do3sFrdutrfyjzJ0hkazFICAzZpvgtN4Rk_rBZR3IwFMPQWD7zpZoO_0GkH2J90xq5Py9q9L0ZYq52J3PFFhgXtxS5Az3ijTGFi1MfjSqXixhehlEPco5CDzHRHqvsvMaey0bw8oJQSqkK9gSBEc7Qs1379uHchzajIQGQWNiovrrS3wqOSjZhX4zgOEgxaIIef4JExJ-YBBlYOputNJJkIkOJIyV0Ty6jUO0iIfejDxe49Kg5wr6GKdvxaWqWXg'; // ou localStorage.getItem('token'), etc.
-    //alterar aqui - verificar o token e colocar outro se necessário para testar.
-    const res = await axios.get(`https://api.taiga.io/api/v1/milestones?project=${projectId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const fetchProjectList = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/users/users-and-tasks-per-sprint-name');
+        const projects = response.data.map(item => ({
+          projectName: item.projectName
+        }));
+        projectList.value = [...new Set(projects.map(p => p.projectName))];  
+      } catch (error) {
+        console.error('Erro ao buscar os projetos:', error);
       }
-    });
-
-    sprintList.value = res.data.map(s => ({
-      id: s.id,
-      name: s.name
-    }));
-  }
-    const onProjectChange = async () => {
-      await Promise.all([
-        fetchOperators(selectedProject.value),
-        fetchSprints(selectedProject.value)
-      ]);
     };
 
-    function renderChart(chartId, label, labels, data, type) {
-      
+    const fetchSprintList = async (selectedProject) => {
+      try {
+        const response = await axios.get('http://localhost:8080/users/users-and-tasks-per-sprint-name', {
+          params: {
+            projeto: selectedProject
+          }
+        });
+        sprintList.value = response.data.map(item => ({
+          id: item.sprintName,
+          name: item.sprintName
+        }));
+      } catch (error) {
+        console.error('Erro ao buscar as sprints:', error);
+      }
+    };
+
+    const fetchOperatorList = async (selectedProject, selectedSprint) => {
+      try {
+        const response = await axios.get('http://localhost:8080/users/users-and-tasks-per-sprint-name', {
+          params: {
+            projeto: selectedProject,
+            sprint: selectedSprint
+          }
+        });
+        operatorList.value = response.data.map(item => ({
+          id: item.user.userCode,
+          name: item.user.userName
+        }));
+      } catch (error) {
+        console.error('Erro ao buscar os operadores:', error);
+      }
+    };
+
+    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
+      try {
+        const response = await axios.get(url, {
+          params: {
+            projeto: selectedProject.value,
+            operador: selectedOperator.value,
+            sprint: selectedSprint.value
+          }
+        });
+        if (typeof response.data === 'number') {
+          dataRef.value = [response.data];
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          labelsRef.value = Object.keys(response.data);
+          dataRef.value = isMultiDataset
+            ? Object.values(response.data).map(item => item.values)
+            : Object.values(response.data);
+        }
+      } catch (error) {
+        console.error(`Erro ao buscar dados de ${url}:`, error);
+      }
+    };
+
+    const updateData = async () => {
+      await Promise.all([
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labelsFinalizados, dataFinalizados),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status-closed', labelsRetrabalhos, dataRetrabalhos),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labelsTempoMedio, dataTempoMedio)
+      ]);
+      await nextTick();
+      renderChart('cardsPorEtiqueta', 'Cards por Etiqueta', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Cards Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Cards Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Retrabalhos', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo Médio', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    };
+
+    const renderChart = (chartId, label, labels, data, type) => {
       const canvas = document.getElementById(chartId);
       if (!canvas) {
         console.warn(`Canvas com ID '${chartId}' não encontrado.`);
@@ -229,79 +275,59 @@ export default {
                 {
                   label: label,
                   data: data,
-                  backgroundColor: type === 'bar' 
-                  ? ['#004a6e', '#00779d', '#00b2cf']
-                  : ['#00b2cf', '#004a6e'],
+                  backgroundColor: '#004a6e',
+                  borderColor: '#004a6e',
+                  borderWidth: 2
                 }
               ]
-        },
-        options: {
-          indexAxis: chartId === 'TempoMedio' ? 'y' : 'x',
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y:{
-              barPercentage: 1,
-              categoryPercentage: 1
-            }
-          }
         }
       });
-    }
-
-    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
-      try {
-        const response = await axios.get(url,{
-          params:{
-            projeto: selectedProject.value,
-            operador: selectedOperator.value,
-            sprint: selectedSprint.value
-          }
-        });     
-        if (typeof response.data === 'number') {
-          dataRef.value = [response.data];
-        } else if (typeof response.data === 'object' && response.data !== null) {
-          labelsRef.value = Object.keys(response.data);
-          dataRef.value = isMultiDataset 
-            ? Object.values(response.data).map(item => item.values) 
-            : Object.values(response.data);
-        }
-      } catch (error) {
-        console.error(`Erro ao buscar dados de ${url}:`, error);
-      }
     };
 
-    onMounted(async () => {
-      await fetchProjects();
-      await Promise.all([
-      fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
-      ]);
+    const clearFilters = () => {
+      selectedProject.value = '';
+      selectedOperator.value = '';
+      selectedSprint.value = '';
+      localStorage.removeItem('selectedProject');
+      localStorage.removeItem('selectedOperator');
+      localStorage.removeItem('selectedSprint');
+      updateData();
+    };
 
-      await nextTick(); 
-      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
-      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
-      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
-      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
-      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
-      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    const onProjectChange = async () => {
+      await fetchSprintList(selectedProject.value);
+      await fetchOperatorList(selectedProject.value, selectedSprint.value);
+      await updateData();
+    };
+
+    const onSprintChange = async () => {
+      await fetchOperatorList(selectedProject.value, selectedSprint.value);
+      await updateData();
+    };
+
+    watch([selectedProject, selectedOperator, selectedSprint], updateData);
+
+    onMounted(() => {
+      fetchProjectList();
+      updateData();
     });
 
     return {
-      labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
-      labelsFinalizados, dataFinalizados, 
-      labelsCriados, dataCriados,
-      labelsRetrabalhos, dataRetrabalhos,
-      selectedProject, selectedOperator, selectedSprint, 
-      projectList, operatorList, sprintList,
-      onProjectChange
+      selectedProject,
+      selectedOperator,
+      selectedSprint,
+      projectList,
+      operatorList,
+      sprintList,
+      clearFilters,
+      onProjectChange,
+      onSprintChange
     };
   }
 };
 </script>
+
+
 
 <style scoped>
 html, body {
