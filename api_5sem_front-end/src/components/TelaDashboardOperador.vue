@@ -94,11 +94,13 @@
 import { Chart, registerables } from 'chart.js';
 import { onMounted, ref, nextTick } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 Chart.register(...registerables);
 
 export default {
   setup() {    
+    const router = useRouter();
     const labels = ref([]);
     const data = ref([]);
 
@@ -199,6 +201,11 @@ export default {
     };
 
     onMounted(async () => {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        router.push('/');
+      return;
+      }
       await Promise.all([
         fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
