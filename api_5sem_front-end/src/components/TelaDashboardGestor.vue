@@ -6,9 +6,7 @@
       </div>
       <div class="buttons-container">
         <button class="sidebar-button">
-          <router-link to="/Home">
-            <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-          </router-link>  
+          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
           <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
@@ -17,7 +15,7 @@
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
-      <router-link to="/TelaDeLogin">
+      <router-link to="/">
       <button class="sidebar-button logout">
         <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>
@@ -96,12 +94,14 @@
 import { Chart, registerables } from 'chart.js';
 import { onMounted, ref, nextTick } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
     
+    const router = useRouter();
     const labels = ref([]);
     const data = ref([]);
 
@@ -202,6 +202,11 @@ export default {
     };
 
     onMounted(async () => {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        router.push('/');
+      return;
+      }
       await Promise.all([
         fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
