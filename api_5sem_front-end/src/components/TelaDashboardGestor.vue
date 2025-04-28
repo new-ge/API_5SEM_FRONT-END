@@ -24,7 +24,7 @@
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
-        <span class="user-role">Operador</span>
+        <span class="user-role">Gestor</span>
       </header>
       <div class="bk-charts">        
         <div class="charts">
@@ -99,7 +99,8 @@ import { useRouter } from 'vue-router';
 Chart.register(...registerables);
 
 export default {
-  setup() {    
+  setup() {
+    
     const router = useRouter();
     const labels = ref([]);
     const data = ref([]);
@@ -113,8 +114,8 @@ export default {
     const labels2 = ref([]);
     const data2 = ref([]);
 
-    const labelsRetrabalhos = ref([]);
-    const dataRetrabalhos = ref([]);
+    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
+    const dataRetrabalhos = ref([10, 45]);
 
     const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
     const dataTempoMedio = ref([9, 3, 2, 5]);
