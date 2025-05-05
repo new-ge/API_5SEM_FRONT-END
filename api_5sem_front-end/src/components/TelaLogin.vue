@@ -9,9 +9,7 @@
       <form @submit.prevent="handleLogin">
         <input type="text" v-model="username" placeholder="Usuário do Taiga" required />
         <input type="password" v-model="password" placeholder="Senha do Taiga" required />
-        <router-link to="/Home">  
-          <button type="submit">Entrar</button>
-        </router-link>
+        <button type="submit">Entrar</button>
       </form>
     </div>
   </div>
@@ -19,6 +17,8 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 import LogoVisionLoginImg from '@/assets/LogoVisionLoginImg.png';
 
 export default defineComponent({
@@ -27,10 +27,40 @@ export default defineComponent({
     const username = ref('');
     const password = ref('');
     const logoSrc = LogoVisionLoginImg;
+    const router = useRouter();
 
-    const handleLogin = () => {
-      console.log('Usuário:', username.value);
-      console.log('Senha:', password.value);
+    const handleLogin = async () => {
+      try {
+        const response = await axios.post('http://localhost:8080/users/login', null, {
+          params: {
+            username: username.value,
+            password: password.value
+          },
+
+        headers: {
+          'Content-Type': 'application/json',
+        }
+        });
+
+        const { token, role } = response.data;
+        
+        localStorage.setItem('authToken', token.value);
+        localStorage.setItem('username', username.value);
+        localStorage.setItem('role', role.value);
+        
+        if (role === 'PRODUCT OWNER') {
+          router.push('/ResultadosdoOperador');
+        } else if (role === 'STAKEHOLDER') {
+          router.push('/ResultadosdoGestor');
+        } else if (['UX', 'BACK', 'FRONT', 'DESIGN'].includes(role)) {
+          router.push('/ResultadosdoOperador');
+        } else {
+          alert('Role não reconhecida: ' + role);
+        }
+      } catch (error) {
+        console.error('Erro no login:', error);
+        alert('Usuário ou senha inválidos!');
+      }
     };
 
     return {
@@ -42,6 +72,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 .container {

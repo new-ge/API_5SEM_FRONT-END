@@ -6,9 +6,7 @@
       </div>
       <div class="buttons-container">
         <button class="sidebar-button">
-          <router-link to="/Home">
             <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-          </router-link>  
         </button>
         <button class="sidebar-button">
           <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
@@ -17,7 +15,7 @@
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
-      <router-link to="/TelaDeLogin">
+      <router-link to="/">
       <button class="sidebar-button logout">
         <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>
@@ -223,6 +221,7 @@ export default {
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
+      fetchData
     };
   }
 };

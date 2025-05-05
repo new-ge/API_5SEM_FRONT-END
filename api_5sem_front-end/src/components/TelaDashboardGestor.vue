@@ -6,9 +6,7 @@
       </div>
       <div class="buttons-container">
         <button class="sidebar-button">
-          <router-link to="/Home">
-            <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-          </router-link>  
+          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
           <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
@@ -17,7 +15,7 @@
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
-      <router-link to="/TelaDeLogin">
+      <router-link to="/">
       <button class="sidebar-button logout">
         <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>
@@ -28,24 +26,27 @@
         <p class="title">Resultados</p>
         
         <div class="filters">
-            <select v-model="selectedProject" @change="onProjectChange">
-              <option disabled value="">Selecione um Projeto</option>
-              <option v-for="project in projectList" :key="project.id" :value="project.id">
-                {{ project.name }}
+            <select v-model="selectedProject">
+              <option value="">Todos os projetos</option>
+              <option v-for="project in projectList" :key="project" :value="project">
+                {{ project }}
               </option>
             </select>
             <select  v-model="selectedOperator">
-              <option disabled value="">Selecione um Operador</option>
-              <option v-for="operator in operatorList" :key= "operator.id" :value="operator.id">
-                {{ operator.name }}
+              <option value="">Todos os operadores</option>
+              <option v-for="operator in operatorList" :key= "operator" :value="operator">
+                {{ operator }}
               </option>
             </select>
             <select v-model="selectedSprint">
-              <option disabled value="">Selecione uma Sprint</option>
-              <option v-for="sprint in sprintList" :key="sprint.id" :value="sprint.name">
-                {{ sprint.name }}
+              <option value="">Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
               </option>
             </select>
+          <div>
+            <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+          </div>
         </div>
         <span class="user-role">Gestor</span>
       </header>
@@ -115,14 +116,13 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick, watch} from 'vue';
 import axios from 'axios';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
-    
     const labels = ref([]);
     const data = ref([]);
 
@@ -135,8 +135,8 @@ export default {
     const labels2 = ref([]);
     const data2 = ref([]);
 
-    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
-    const dataRetrabalhos = ref([10, 45]);
+    const labelsRetrabalhos = ref([]);
+    const dataRetrabalhos = ref([]);
 
     const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
     const dataTempoMedio = ref([9, 3, 2, 5]);
@@ -150,40 +150,10 @@ export default {
     const operatorList = ref ([]);
     const sprintList = ref ([]);
 
-    const userId = 758714; // Substituir pelo ID real que você tiver
-
-    const fetchProjects = async () => {
-      const res = await axios.get(`http://localhost:8080/projects/get-all-projects/${userId}`);
-      projectList.value = res.data;
-    }
-
-    const fetchOperators = async (projectId) => {
-      const res = await axios.get(`http://localhost:8080/users/users-and-tasks/project/${projectId}`);
-      operatorList.value = res.data.map(op => ({
-        id: op.user.userCode,
-        name: op.user.userName
-      }));
-    }
-
-  const fetchSprints = async (projectId) => {
-    const token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ1NjQ3MTY2LCJqdGkiOiIwNmZhMzRmZWYyOTg0YmQ4OTJhMGExNDhhYmYyMWVjMCIsInVzZXJfaWQiOjc1ODcxNH0.fSVoDQAkgl683EbvwiUJVCaWXvjtxoYWm-QcKhADRUuN_YAalnGbjjJDsuRbtydcQUyPnIWxCYX4yVkASVHeH5Do3sFrdutrfyjzJ0hkazFICAzZpvgtN4Rk_rBZR3IwFMPQWD7zpZoO_0GkH2J90xq5Py9q9L0ZYq52J3PFFhgXtxS5Az3ijTGFi1MfjSqXixhehlEPco5CDzHRHqvsvMaey0bw8oJQSqkK9gSBEc7Qs1379uHchzajIQGQWNiovrrS3wqOSjZhX4zgOEgxaIIef4JExJ-YBBlYOputNJJkIkOJIyV0Ty6jUO0iIfejDxe49Kg5wr6GKdvxaWqWXg'; // ou localStorage.getItem('token'), etc.
-    //alterar aqui - verificar o token e colocar outro se necessário para testar.
-    const res = await axios.get(`https://api.taiga.io/api/v1/milestones?project=${projectId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    sprintList.value = res.data.map(s => ({
-      id: s.id,
-      name: s.name
-    }));
-  }
-    const onProjectChange = async () => {
-      await Promise.all([
-        fetchOperators(selectedProject.value),
-        fetchSprints(selectedProject.value)
-      ]);
+    const clearFilters = () => {
+      selectedProject.value = '';
+      selectedOperator.value = '';
+      selectedSprint.value = '';
     };
 
     function renderChart(chartId, label, labels, data, type) {
@@ -248,39 +218,169 @@ export default {
         }
       });
     }
-
-    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
+    
+    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
-        const response = await axios.get(url,{
-          params:{
-            projeto: selectedProject.value,
-            operador: selectedOperator.value,
-            sprint: selectedSprint.value
+        const response = await axios.get(url);
+        const data = response.data;
+
+        const sprintSet = new Set();
+        const operatorSet = new Set();
+        const projectSet = new Set();
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            console.log(item.milestoneName);
+            sprintSet.add(item.milestoneName);
+            operatorSet.add(item.userName);
+            projectSet.add(item.projectName);
+          });
+
+          sprintList.value = Array.from(sprintSet);
+          operatorList.value = Array.from(operatorSet);
+          projectList.value = Array.from(projectSet);
+        }
+
+        if (transformFunction && typeof transformFunction === 'function') {
+          const { labels, dataPoints } = transformFunction(data);
+          labelsRef.value = labels;
+          dataRef.value = dataPoints;
+        } else if (Array.isArray(data)) {
+          const groupedCounts = {};
+
+          const keyToGroup = groupByKey ?? (
+            'statusName' in data[0] ? 'statusName' :
+            'milestoneName' in data[0] ? 'milestoneName' :
+            'projectName' in data[0] ? 'projectName' :
+            'userName' in data[0] ? 'userName' :
+            (data.length >= 2 &&
+              'rework' in data[data.length - 1] &&
+              'finished' in data[data.length - 2]) ? 'rework-finished' :
+              null
+          );
+
+          if (keyToGroup) {
+            if (keyToGroup === 'rework-finished') {
+              let reworkTotal = 0;
+              let finishedTotal = 0;
+
+              data.forEach(item => {
+                reworkTotal += item.rework ?? 0;
+                finishedTotal += item.finished ?? 0;
+              });
+
+              groupedCounts['Retrabalho'] = reworkTotal;
+              groupedCounts['Concluidas'] = finishedTotal;
+
+              labelsRef.value = ['Retrabalho', 'Concluidas'];
+              dataRef.value = [groupedCounts['Retrabalho'], groupedCounts['Concluidas']];
+            } else {
+              data.forEach(item => {
+                const key = item[keyToGroup];
+                if (key != null) {
+                  const quant = item.quant ?? 0;
+                  groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                }
+              });
+
+              labelsRef.value = Object.keys(groupedCounts);
+              dataRef.value = Object.values(groupedCounts);
+            }
+          } else {
+            labelsRef.value = [];
+            dataRef.value = [];
           }
-        });     
-        if (typeof response.data === 'number') {
-          dataRef.value = [response.data];
-        } else if (typeof response.data === 'object' && response.data !== null) {
-          labelsRef.value = Object.keys(response.data);
-          dataRef.value = isMultiDataset 
-            ? Object.values(response.data).map(item => item.values) 
-            : Object.values(response.data);
+        } else if (typeof data === 'object' && data !== null) {
+          const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
+          const quant = data.quant ?? 0;
+
+          if (key) {
+            labelsRef.value = [key];
+            dataRef.value = [quant];
+          }
+        } else if (typeof data === 'number') {
+          dataRef.value = [data];
         }
       } catch (error) {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
 
-    onMounted(async () => {
-      await fetchProjects();
+    watch([selectedSprint, selectedOperator, selectedProject], async () => {
       await Promise.all([
-      fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
-      ]);
+        updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
+        updateData('http://localhost:8080/tasks/tasks-per-sprint'),
+        updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
+        updateData('http://localhost:8080/tasks/count-rework'),
+        updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+      ]),
+      
+      await nextTick(); 
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    });
 
+    const updateData = async (url) => {
+      const params = [];
+
+      if (selectedSprint.value) {
+        params.push(`milestone=${encodeURIComponent(selectedSprint.value)}`);
+      }
+
+      if (selectedOperator.value) {
+        params.push(`user=${encodeURIComponent(selectedOperator.value)}`);
+      }
+
+      if (selectedProject.value) {
+        params.push(`project=${encodeURIComponent(selectedProject.value)}`);
+      }
+
+      const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
+
+      console.log(fullUrl)
+
+      const isCountByTag = url.includes('count-tasks-by-tag');
+      const isTasksPerSprint = url.includes('tasks-per-sprint');
+      const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
+      const isRework = url.includes('count-rework'); 
+      const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      
+      await Promise.all([
+        isCountByTag 
+          ? fetchData(fullUrl, labels, data, null, 'tagName') 
+          : Promise.resolve(),
+
+        isTasksPerSprint 
+          ? fetchData(fullUrl, labelsCriados, dataCriados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isTasksClosedPerSprint
+          ? fetchData(fullUrl, labelsFinalizados, dataFinalizados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isRework
+          ? fetchData(fullUrl, labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished') 
+          : Promise.resolve(),
+
+        isTasksByStatus
+          ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve()
+      ]);
+    };
+    
+    onMounted(async () => {
+      await axios.get('http://localhost:8080/tasks/syncAll'),
+      await Promise.all([
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
+        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
+      ]),
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
@@ -297,7 +397,7 @@ export default {
       labelsRetrabalhos, dataRetrabalhos,
       selectedProject, selectedOperator, selectedSprint, 
       projectList, operatorList, sprintList,
-      onProjectChange
+      clearFilters
     };
   }
 };

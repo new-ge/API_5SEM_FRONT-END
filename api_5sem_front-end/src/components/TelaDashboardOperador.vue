@@ -15,7 +15,7 @@
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
-      <router-link to="/TelaDeLogin">
+      <router-link to="/">
       <button class="sidebar-button logout">
         <img src="/logoutLogo.ico" alt="Sair" class="icon">
       </button>
@@ -98,7 +98,7 @@ import axios from 'axios';
 Chart.register(...registerables);
 
 export default {
-  setup() {    
+  setup() {
     const labels = ref([]);
     const data = ref([]);
 
@@ -111,8 +111,8 @@ export default {
     const labels2 = ref([]);
     const data2 = ref([]);
 
-    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
-    const dataRetrabalhos = ref([10, 45]);
+    const labelsRetrabalhos = ref([]);
+    const dataRetrabalhos = ref([]);
 
     const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
     const dataTempoMedio = ref([9, 3, 2, 5]);
@@ -182,16 +182,70 @@ export default {
       });
     }
 
-    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
+    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
-        const response = await axios.get(url);     
-        if (typeof response.data === 'number') {
-          dataRef.value = [response.data];
-        } else if (typeof response.data === 'object' && response.data !== null) {
-          labelsRef.value = Object.keys(response.data);
-          dataRef.value = isMultiDataset 
-            ? Object.values(response.data).map(item => item.values) 
-            : Object.values(response.data);
+        const response = await axios.get(url);
+        const data = response.data;
+
+        if (transformFunction && typeof transformFunction === 'function') {
+          const { labels, dataPoints } = transformFunction(data);
+          labelsRef.value = labels;
+          dataRef.value = dataPoints;
+        } else if (Array.isArray(data)) {
+          const groupedCounts = {};
+
+          const keyToGroup = groupByKey ?? (
+            'statusName' in data[0] ? 'statusName' :
+            'milestoneName' in data[0] ? 'milestoneName' :
+            'projectName' in data[0] ? 'projectName' :
+            'userName' in data[0] ? 'userName' :
+            (data.length >= 2 &&
+              'rework' in data[data.length - 1] &&
+              'finished' in data[data.length - 2]) ? 'rework-finished' :
+              null
+          );
+
+          if (keyToGroup) {
+            if (keyToGroup === 'rework-finished') {
+              let reworkTotal = 0;
+              let finishedTotal = 0;
+
+              data.forEach(item => {
+                reworkTotal += item.rework ?? 0;
+                finishedTotal += item.finished ?? 0;
+              });
+
+              groupedCounts['Retrabalho'] = reworkTotal;
+              groupedCounts['Concluidas'] = finishedTotal;
+
+              labelsRef.value = ['Retrabalho', 'Concluidas'];
+              dataRef.value = [groupedCounts['Retrabalho'], groupedCounts['Concluidas']];
+            } else {
+              data.forEach(item => {
+                const key = item[keyToGroup];
+                if (key != null) {
+                  const quant = item.quant ?? 0;
+                  groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                }
+              });
+
+              labelsRef.value = Object.keys(groupedCounts);
+              dataRef.value = Object.values(groupedCounts);
+            }
+          } else {
+            labelsRef.value = [];
+            dataRef.value = [];
+          }
+        } else if (typeof data === 'object' && data !== null) {
+          const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
+          const quant = data.quant ?? 0;
+
+          if (key) {
+            labelsRef.value = [key];
+            dataRef.value = [quant];
+          }
+        } else if (typeof data === 'number') {
+          dataRef.value = [data];
         }
       } catch (error) {
         console.error(`Erro ao buscar dados de ${url}:`, error);
@@ -199,14 +253,14 @@ export default {
     };
 
     onMounted(async () => {
+      await axios.get('http://localhost:8080/tasks/syncAll'),
       await Promise.all([
-        fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados)
-      ]);
-
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
+        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
+      ]),
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
@@ -215,12 +269,12 @@ export default {
       renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
       renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
     });
-
     return {
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
+      fetchData
     };
   }
 };
