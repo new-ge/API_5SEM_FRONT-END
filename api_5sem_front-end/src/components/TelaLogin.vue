@@ -49,11 +49,11 @@ export default defineComponent({
         localStorage.setItem('role', role.value);
         
         if (role === 'PRODUCT OWNER') {
-          router.push('/ResultadosdoOperador');
+          router.push('/ResultadosDoAdmin');
         } else if (role === 'STAKEHOLDER') {
-          router.push('/ResultadosdoGestor');
+          router.push('/ResultadosDoGestor');
         } else if (['UX', 'BACK', 'FRONT', 'DESIGN'].includes(role)) {
-          router.push('/ResultadosdoOperador');
+          router.push('/ResultadosDoOperador');
         } else {
           alert('Role não reconhecida: ' + role);
         }
