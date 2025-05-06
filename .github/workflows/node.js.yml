@@ -16,16 +16,18 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [MATRIXNODE_VERSION]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js ${{ MATRIXNODE_VERSION }}
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: ${{ MATRIXNODE_VERSION }}
         cache: 'npm'
+    - name: Change directory to api_5sem_front-end
+      run: cd api_5sem_front-end
     - name: run npm ci
       run: npm ci
     - name: npm run build
