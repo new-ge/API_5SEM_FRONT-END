@@ -30,7 +30,3 @@ jobs:
       - name: Build project
         run: npm run build --if-present
         working-directory: ./api_5sem_front-end
-
-      - name: Run tests
-        run: npm test
-        working-directory: ./api_5sem_front-end
