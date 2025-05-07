@@ -24,6 +24,30 @@
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
+        
+        <div class="filters">
+            <select v-model="selectedProject">
+              <option value="">Todos os projetos</option>
+              <option v-for="project in projectList" :key="project" :value="project">
+                {{ project }}
+              </option>
+            </select>
+            <select  v-model="selectedOperator">
+              <option value="">Todos os operadores</option>
+              <option v-for="operator in operatorList" :key= "operator" :value="operator">
+                {{ operator }}
+              </option>
+            </select>
+            <select v-model="selectedSprint">
+              <option value="">Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
+              </option>
+            </select>
+          <div>
+            <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+          </div>
+        </div>
         <span class="user-role">Gestor</span>
       </header>
       <div class="bk-charts">        
@@ -92,16 +116,13 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick, watch} from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
-    
-    const router = useRouter();
     const labels = ref([]);
     const data = ref([]);
 
@@ -114,13 +135,26 @@ export default {
     const labels2 = ref([]);
     const data2 = ref([]);
 
-    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
-    const dataRetrabalhos = ref([10, 45]);
+    const labelsRetrabalhos = ref([]);
+    const dataRetrabalhos = ref([]);
 
     const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
     const dataTempoMedio = ref([9, 3, 2, 5]);
 
     const chartInstances = {};
+    const selectedProject = ref('');
+    const selectedOperator = ref('');
+    const selectedSprint = ref('');
+
+    const projectList = ref ([]);
+    const operatorList = ref ([]);
+    const sprintList = ref ([]);
+
+    const clearFilters = () => {
+      selectedProject.value = '';
+      selectedOperator.value = '';
+      selectedSprint.value = '';
+    };
 
     function renderChart(chartId, label, labels, data, type) {
       
@@ -184,38 +218,169 @@ export default {
         }
       });
     }
-
-    const fetchData = async (url, labelsRef, dataRef, isMultiDataset = false) => {
+    
+    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
-        const response = await axios.get(url);     
-        if (typeof response.data === 'number') {
-          dataRef.value = [response.data];
-        } else if (typeof response.data === 'object' && response.data !== null) {
-          labelsRef.value = Object.keys(response.data);
-          dataRef.value = isMultiDataset 
-            ? Object.values(response.data).map(item => item.values) 
-            : Object.values(response.data);
+        const response = await axios.get(url);
+        const data = response.data;
+
+        const sprintSet = new Set();
+        const operatorSet = new Set();
+        const projectSet = new Set();
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            console.log(item.milestoneName);
+            sprintSet.add(item.milestoneName);
+            operatorSet.add(item.userName);
+            projectSet.add(item.projectName);
+          });
+
+          sprintList.value = Array.from(sprintSet);
+          operatorList.value = Array.from(operatorSet);
+          projectList.value = Array.from(projectSet);
+        }
+
+        if (transformFunction && typeof transformFunction === 'function') {
+          const { labels, dataPoints } = transformFunction(data);
+          labelsRef.value = labels;
+          dataRef.value = dataPoints;
+        } else if (Array.isArray(data)) {
+          const groupedCounts = {};
+
+          const keyToGroup = groupByKey ?? (
+            'statusName' in data[0] ? 'statusName' :
+            'milestoneName' in data[0] ? 'milestoneName' :
+            'projectName' in data[0] ? 'projectName' :
+            'userName' in data[0] ? 'userName' :
+            (data.length >= 2 &&
+              'rework' in data[data.length - 1] &&
+              'finished' in data[data.length - 2]) ? 'rework-finished' :
+              null
+          );
+
+          if (keyToGroup) {
+            if (keyToGroup === 'rework-finished') {
+              let reworkTotal = 0;
+              let finishedTotal = 0;
+
+              data.forEach(item => {
+                reworkTotal += item.rework ?? 0;
+                finishedTotal += item.finished ?? 0;
+              });
+
+              groupedCounts['Retrabalho'] = reworkTotal;
+              groupedCounts['Concluidas'] = finishedTotal;
+
+              labelsRef.value = ['Retrabalho', 'Concluidas'];
+              dataRef.value = [groupedCounts['Retrabalho'], groupedCounts['Concluidas']];
+            } else {
+              data.forEach(item => {
+                const key = item[keyToGroup];
+                if (key != null) {
+                  const quant = item.quant ?? 0;
+                  groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                }
+              });
+
+              labelsRef.value = Object.keys(groupedCounts);
+              dataRef.value = Object.values(groupedCounts);
+            }
+          } else {
+            labelsRef.value = [];
+            dataRef.value = [];
+          }
+        } else if (typeof data === 'object' && data !== null) {
+          const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
+          const quant = data.quant ?? 0;
+
+          if (key) {
+            labelsRef.value = [key];
+            dataRef.value = [quant];
+          }
+        } else if (typeof data === 'number') {
+          dataRef.value = [data];
         }
       } catch (error) {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
 
-    onMounted(async () => {
-      const token = localStorage.getItem('authToken')
-      if (!token) {
-        router.push('/');
-      return;
-      }
+    watch([selectedSprint, selectedOperator, selectedProject], async () => {
       await Promise.all([
-        fetchData('http://localhost:8080/tasks/tempo-medio', labelsTempoMedio, dataTempoMedio),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados),
-        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos)
-      ]);
+        updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
+        updateData('http://localhost:8080/tasks/tasks-per-sprint'),
+        updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
+        updateData('http://localhost:8080/tasks/count-rework'),
+        updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+      ]),
+      
+      await nextTick(); 
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    });
 
+    const updateData = async (url) => {
+      const params = [];
+
+      if (selectedSprint.value) {
+        params.push(`milestone=${encodeURIComponent(selectedSprint.value)}`);
+      }
+
+      if (selectedOperator.value) {
+        params.push(`user=${encodeURIComponent(selectedOperator.value)}`);
+      }
+
+      if (selectedProject.value) {
+        params.push(`project=${encodeURIComponent(selectedProject.value)}`);
+      }
+
+      const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
+
+      console.log(fullUrl)
+
+      const isCountByTag = url.includes('count-tasks-by-tag');
+      const isTasksPerSprint = url.includes('tasks-per-sprint');
+      const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
+      const isRework = url.includes('count-rework'); 
+      const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      
+      await Promise.all([
+        isCountByTag 
+          ? fetchData(fullUrl, labels, data, null, 'tagName') 
+          : Promise.resolve(),
+
+        isTasksPerSprint 
+          ? fetchData(fullUrl, labelsCriados, dataCriados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isTasksClosedPerSprint
+          ? fetchData(fullUrl, labelsFinalizados, dataFinalizados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isRework
+          ? fetchData(fullUrl, labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished') 
+          : Promise.resolve(),
+
+        isTasksByStatus
+          ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve()
+      ]);
+    };
+    
+    onMounted(async () => {
+      await axios.get('http://localhost:8080/tasks/syncAll'),
+      await Promise.all([
+        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
+        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
+        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
+        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
+      ]),
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
@@ -230,6 +395,9 @@ export default {
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
+      selectedProject, selectedOperator, selectedSprint, 
+      projectList, operatorList, sprintList,
+      clearFilters
     };
   }
 };
@@ -324,6 +492,30 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
+  background-color: #ffffff; /* Fundo branco */
+  filter: brightness(1.1) contrast(1.2); /* Filtro aplicado no header */
+
+}
+.filters select{
+  border:2px solid #00779d;
+  border-radius: 5px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  transition: filter 0.3s ease-in-out;
+}
+.filters select:hover {
+  filter: brightness(1.2) contrast(1.3); /* Filtro para quando o select for hover */
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+}
+
+.user-role {
+  font-size: 18px;
+  color: #3ab6ff;
+  margin-left: 15px;
 }
 
 .bk-charts {

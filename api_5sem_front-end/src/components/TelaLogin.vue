@@ -33,13 +33,12 @@ export default defineComponent({
       try {
         const response = await axios.post('http://localhost:8080/users/login', null, {
           params: {
-            projectId: 1641986, 
             username: username.value,
             password: password.value
           },
 
         headers: {
-        'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         }
         });
 
@@ -50,11 +49,11 @@ export default defineComponent({
         localStorage.setItem('role', role.value);
         
         if (role === 'PRODUCT OWNER') {
-          router.push('/ResultadosdoOperador');
+          router.push('/ResultadosDoAdmin');
         } else if (role === 'STAKEHOLDER') {
-          router.push('/ResultadosdoGestor');
+          router.push('/ResultadosDoGestor');
         } else if (['UX', 'BACK', 'FRONT', 'DESIGN'].includes(role)) {
-          router.push('/ResultadosdoOperador');
+          router.push('/ResultadosDoOperador');
         } else {
           alert('Role não reconhecida: ' + role);
         }
