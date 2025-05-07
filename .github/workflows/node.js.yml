@@ -1,0 +1,56 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main", "Sprint-1", "Sprint-2", "Sprint-3" ]
+  pull_request:
+    branches: [ "main", "Sprint-1", "Sprint-2", "Sprint-3" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.17.0]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./api_5sem_front-end
+
+      - name: Build project
+        run: npm run build --if-present
+        working-directory: ./api_5sem_front-end
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/install.sh | bash
+          gh --version
+
+      - name: Enable auto-merge for PR
+        run: |
+          gh pr merge "$GITHUB_HEAD_REF" \
+            --repo "$GITHUB_REPOSITORY" \
+            --auto \
+            --merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
