@@ -138,8 +138,8 @@ export default {
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
     const selectedProject = ref('');
@@ -313,6 +313,7 @@ export default {
         updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
         updateData('http://localhost:8080/tasks/count-rework'),
         updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+        updateData('http://localhost:8080/users/average-time')
       ]),
       
       await nextTick(); 
@@ -325,6 +326,7 @@ export default {
     });
 
     const updateData = async (url) => {
+      
       const params = [];
 
       if (selectedSprint.value) {
@@ -348,6 +350,8 @@ export default {
       const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
       const isRework = url.includes('count-rework'); 
       const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      const isTempoMedio = url.includes('/users/average-time');
+
       
       await Promise.all([
         isCountByTag 
@@ -368,6 +372,14 @@ export default {
 
         isTasksByStatus
           ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve(),
+
+        isTempoMedio
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, (data) => {
+              const labels = data.map(item => `${item.userName} - ${item.milestoneName}`);
+              const dataPoints = data.map(item => parseFloat(item.tempoMedio));
+              return { labels, dataPoints };
+            })
           : Promise.resolve()
       ]);
     };
@@ -379,8 +391,14 @@ export default {
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
         fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
         fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
-      ]),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/users/average-time', labelsTempoMedio, dataTempoMedio, (data) => {
+          const labels = data.map(item => `${item.userName} - ${item.milestoneName}`);
+          const dataPoints = data.map(item => parseFloat(item.tempoMedio));
+          return { labels, dataPoints };
+        }),
+      ]);
+
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
