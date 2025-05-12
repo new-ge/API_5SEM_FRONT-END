@@ -21,11 +21,9 @@
       </button>
       </router-link>
     </aside>
-
     <main class="content">
       <header class="header">
-        <p class="title">Resultados</p>
-        
+        <p class="title">Resultados</p>        
         <div class="filters">
             <select v-model="selectedProject">
               <option value="">Todos os projetos</option>
@@ -51,7 +49,6 @@
         </div>
         <span class="user-role">Gestor</span>
       </header>
-
       <header class="header-mobile">
       <div class="logo">
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
@@ -63,7 +60,6 @@
       </button>        
         <span class="user-role">Gestor</span>
       </header>
-
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -506,8 +502,8 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
-  background-color: #ffffff; /* Fundo branco */
-  filter: brightness(1.1) contrast(1.2); /* Filtro aplicado no header */
+  background-color: #ffffff;
+  filter: brightness(1.1) contrast(1.2);
 }
 
 .header-mobile {
@@ -521,8 +517,9 @@ html, body {
   background-color: #f9f9f9;
   transition: filter 0.3s ease-in-out;
 }
+
 .filters select:hover {
-  filter: brightness(1.2) contrast(1.3); /* Filtro para quando o select for hover */
+  filter: brightness(1.2) contrast(1.3); 
 }
 
 .filters {
@@ -639,10 +636,10 @@ html, body {
 }
 
 .chart-box2 {
-    background: white;
-    border-radius: 10px;
-    width: 50%;
-    height: 100%;
+  background: white;
+  border-radius: 10px;
+  width: 50%;
+  height: 100%;
 }
 
 .cards-container {
@@ -758,7 +755,7 @@ p {
     display: flex;
     flex-direction: row;
     width: 66%;
-    height: 7%;
+    height: 8%;
     justify-content: space-between;
   }
 
@@ -799,7 +796,7 @@ p {
   .bk-charts {
     flex-direction: column;
     height: 100%;
-    width: 68%;
+    width: 67%;
     overflow-y: auto;
   }
 
@@ -861,7 +858,5 @@ p {
   .chart-box2 {
     font-size: 15px;
   }
-
-
 }
 </style>

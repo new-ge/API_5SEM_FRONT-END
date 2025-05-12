@@ -3,7 +3,6 @@
     <div class="logo-container">
       <img :src="logoSrc" alt="Logo Vision" class="logo" />
     </div>
-
     <div class="login-box">
       <h1>Login</h1>
       <form class="form" @submit.prevent="handleLogin">
@@ -205,22 +204,24 @@ export default defineComponent({
   background-color: #357ab8;
 }
 
-@media (max-width: 600px) {
+@media screen and (max-width: 768px) {
   .login-box {
-    padding: 5.5rem;
+    width: 66%;
+    height: 50%;
   }
 
   .login-box input {
-    width: 100%;
-    padding: 0.5rem;
+    width: 90%;
   }
 
   .login-box h1 {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 
   .logo {
-    max-width: 200px;
+    width: 50vw;
+    margin-top: -14vw;
+    margin-bottom: -10vh;
   }
 }
 </style>
