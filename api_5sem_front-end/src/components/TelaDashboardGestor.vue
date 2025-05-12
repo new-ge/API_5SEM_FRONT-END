@@ -11,7 +11,7 @@
         <button class="sidebar-button">
           <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
         </button>
-        <button class="sidebar-button">
+        <button class="sidebar-button" @click="exportFile">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
@@ -218,6 +218,29 @@ export default {
         }
       });
     }
+
+    const exportFile = () => {
+      axios.get('http://localhost:8080/tasks/request-excel', {
+        responseType: 'blob',
+      })
+      .then(response => {
+        if (response.status === 200) {
+          const blob = response.data;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'relatorio.xlsx';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } else {
+          throw new Error('Falha ao exportar arquivo');
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao exportar:', error);
+      });
+    }
     
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
@@ -373,7 +396,7 @@ export default {
     };
     
     onMounted(async () => {
-      await axios.get('http://localhost:8080/tasks/syncAll'),
+      await axios.get('http://localhost:8080/tasks/sync-all-process'),
       await Promise.all([
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
@@ -397,7 +420,7 @@ export default {
       labelsRetrabalhos, dataRetrabalhos,
       selectedProject, selectedOperator, selectedSprint, 
       projectList, operatorList, sprintList,
-      clearFilters
+      clearFilters, exportFile
     };
   }
 };
