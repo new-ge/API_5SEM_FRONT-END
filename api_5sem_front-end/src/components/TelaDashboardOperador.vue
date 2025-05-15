@@ -11,7 +11,7 @@
         <button class="sidebar-button">
           <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
         </button>
-        <button class="sidebar-button">
+        <button class="sidebar-button" @click="exportFile">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
@@ -182,6 +182,32 @@ export default {
       });
     }
 
+    function exportFile() {
+      axios.get('/request-excel', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        }
+        throw new Error('Falha ao exportar arquivo');
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'persons.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch(error => {
+        console.error('Erro ao exportar:', error);
+      });
+    }
+
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
         const response = await axios.get(url);
@@ -274,7 +300,7 @@ export default {
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
-      fetchData
+      fetchData, exportFile
     };
   }
 };
