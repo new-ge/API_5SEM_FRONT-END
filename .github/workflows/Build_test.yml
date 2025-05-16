@@ -3,8 +3,6 @@ name: Build and Test
 on:
   push:
     branches: [ "main", "Sprint-*", "VSN-*" ]
-  pull_request:
-    branches: [ "main", "Sprint-*", "VSN-*" ]
 
 jobs:
   build_and_test:
