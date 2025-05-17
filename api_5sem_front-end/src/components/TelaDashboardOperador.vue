@@ -30,13 +30,20 @@
       <div class="logo">
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
-      <button onclick="menu()" id="btn-menu">
+      <button class="btn-menu" @click="toggleMenu" id="btn-menu">
         <span class="linha"></span>
         <span class="linha"></span>
         <span class="linha"></span>
       </button>        
         <span class="user-role">Operador</span>
       </header>
+      <div class="menu-mobile" v-show="menuAberto">
+        <nav>
+          <button class="btn-close" @click="toggleMenu">X</button>
+          <a href="#">Exportar</a>
+          <router-link to="/" class="logout-link">Logout</router-link>
+        </nav>
+      </div>
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -110,6 +117,13 @@ Chart.register(...registerables);
 
 export default {
   setup() {
+
+    const menuAberto = ref(false)
+
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
+    
     const labels = ref([]);
     const data = ref([]);
 
@@ -281,6 +295,7 @@ export default {
       renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
     });
     return {
+      menuAberto, toggleMenu,
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
@@ -712,6 +727,41 @@ p {
     font-size: 15px;
   }
 
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
 
 }
 </style>
