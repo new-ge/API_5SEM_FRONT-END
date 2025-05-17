@@ -23,8 +23,7 @@
     </aside>
     <main class="content">
       <header class="header">
-        <p class="title">Resultados</p>
-        
+        <p class="title">Resultados</p>        
         <div class="filters">
             <select v-model="selectedProject">
               <option value="">Todos os projetos</option>
@@ -50,6 +49,49 @@
         </div>
         <span class="user-role">Gestor</span>
       </header>
+      <header class="header-mobile">
+        <div class="elementos">
+          <div class="logo">
+            <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
+          </div>
+          <button class="btn-menu" @click="toggleMenu" id="btn-menu">
+            <span class="linha"></span>
+            <span class="linha"></span>
+            <span class="linha"></span>
+          </button>        
+          <span class="user-role">Gestor</span>
+        </div>
+        <div class="filters">
+              <select v-model="selectedProject">
+                <option value="">Todos os projetos</option>
+                <option v-for="project in projectList" :key="project" :value="project">
+                  {{ project }}
+                </option>
+              </select>
+              <select  v-model="selectedOperator">
+                <option value="">Todos os operadores</option>
+                <option v-for="operator in operatorList" :key= "operator" :value="operator">
+                  {{ operator }}
+                </option>
+              </select>
+              <select v-model="selectedSprint">
+                <option value="">Todas as sprints</option>
+                <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                  {{ sprint }}
+                </option>
+              </select>
+            <div>
+              <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+            </div>
+          </div>
+      </header>
+      <div class="menu-mobile" v-show="menuAberto">
+        <nav>
+          <button class="btn-close" @click="toggleMenu">X</button>
+          <a href="#">Exportar</a>
+          <router-link to="/" class="logout-link">Logout</router-link>
+        </nav>
+      </div>
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -123,8 +165,15 @@ Chart.register(...registerables);
 
 export default {
   setup() {
-    const labels = ref([]);
-    const data = ref([]);
+
+    const menuAberto = ref(false)
+
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
+
+    const labels = ref(['test', 'test2', 'test3', 'test4']);
+    const data = ref([1, 2, 3, 4]);
 
     const labelsFinalizados = ref([]);
     const dataFinalizados = ref([]);
@@ -132,8 +181,8 @@ export default {
     const labelsCriados = ref([]);
     const dataCriados = ref([]);  
 
-    const labels2 = ref([]);
-    const data2 = ref([]);
+    const labels2 = ref(['teasdast', 'test2', 'test3', 'test4']);
+    const data2 = ref([1, 2, 3, 4]);
 
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
@@ -384,7 +433,7 @@ export default {
     };
     
     onMounted(async () => {
-      await axios.get('http://localhost:8080/tasks/syncAll'),
+      await axios.get('http://localhost:8080/tasks/sync-all-process'),
       await Promise.all([
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
@@ -404,16 +453,18 @@ export default {
     });
 
     return {
+      menuAberto, toggleMenu,
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
       selectedProject, selectedOperator, selectedSprint, 
-      projectList, operatorList, sprintList,
-      clearFilters
+      projectList, operatorList, sprintList, clearFilters
     };
   }
+
 };
+
 </script>
 
 <style scoped>
@@ -505,24 +556,36 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
-  background-color: #ffffff; /* Fundo branco */
-  filter: brightness(1.1) contrast(1.2); /* Filtro aplicado no header */
-
+  background-color: #ffffff;
+  filter: brightness(1.1) contrast(1.2);
 }
+
+.header-mobile {
+  display: none;
+}
+
 .filters select{
-  border:2px solid #00779d;
+  border:2px solid #004a6e;
   border-radius: 5px;
   padding: 8px;
   background-color: #f9f9f9;
   transition: filter 0.3s ease-in-out;
 }
+
 .filters select:hover {
-  filter: brightness(1.2) contrast(1.3); /* Filtro para quando o select for hover */
+  filter: brightness(1.2) contrast(1.3); 
 }
 
 .filters {
   display: flex;
   gap: 15px;
+}
+
+.btn-clear {
+  height: 101%;
+  border: 2px solid #004a6e;
+  border-radius: 5px;
+  margin-bottom: 8px;
 }
 
 .user-role {
@@ -634,10 +697,10 @@ html, body {
 }
 
 .chart-box2 {
-    background: white;
-    border-radius: 10px;
-    width: 50%;
-    height: 100%;
+  background: white;
+  border-radius: 10px;
+  width: 50%;
+  height: 100%;
 }
 
 .cards-container {
@@ -737,5 +800,198 @@ p {
 * {
   max-width: 100vw;
   max-height: 100vh;
+}
+
+@media screen and (max-width: 768px) {
+
+  .sidebar, .header{
+    display: none;
+  }
+
+  .icon-logo {
+    width: 6em;
+  }
+
+  .header-mobile {    
+    display: flex;
+    flex-direction: column;
+    width: 66%;
+    height: 15%;
+  }
+
+  .elementos{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 39%;
+    align-items: center;
+  }
+
+  .logo {
+    height: 54%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 42%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 52%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
+  #btn-menu {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #3ab6ff;
+    border-radius: 7px;
+    background: transparent;
+    display: flex;
+    margin-top: 3px;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 4%;
+  }
+
+  .linha {
+    width: 15px;
+    height: 2px;
+    background-color: #3ab6ff;
+    display: block;
+    margin: 3px auto;
+    position: relative;
+    transform-origin: center;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .bk-charts {
+    flex-direction: column;
+    height: 100%;
+    width: 67%;
+    overflow-y: auto;
+  }
+
+  .charts {
+    width: 98%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-group {
+    width: 76%;
+    min-width: 98%;
+  }
+
+  .titulos {
+    min-width: 0px;
+  }
+  .cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    width: 99%;
+    height: 25%;
+    font-size: 10px;
+  }
+
+  .card {
+    width: 21%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .chart-group2 {
+    height: 49%;
+  }
+
+  .chart-container2 {
+    height: 82%;
+  }
+
+  .chart-container3 {
+    height: 58%;
+  }
+
+  .charts1 {
+    width: 98%;
+  }
+
+  .charts2 {
+    height: 50%;
+    width: 98%;
+  }
+
+  .chart-group4 {
+    width: 100%;
+  }
+
+  .chart-box2 {
+    font-size: 15px;
+  }
+
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
+
 }
 </style>
