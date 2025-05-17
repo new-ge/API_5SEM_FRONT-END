@@ -230,7 +230,6 @@ export default {
 
         if (Array.isArray(data)) {
           data.forEach(item => {
-            console.log(item.milestoneName);
             sprintSet.add(item.milestoneName);
             operatorSet.add(item.userName);
             projectSet.add(item.projectName);
@@ -258,6 +257,8 @@ export default {
               'finished' in data[data.length - 2]) ? 'rework-finished' :
               null
           );
+          console.log(typeof data)
+          console.log(keyToGroup)
 
           if (keyToGroup) {
             if (keyToGroup === 'rework-finished') {
@@ -280,11 +281,14 @@ export default {
                 if (key != null) {
                   const quant = item.quant ?? 0;
                   groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                  console.log(quant)
                 }
               });
 
               labelsRef.value = Object.keys(groupedCounts);
+              console.log(labelsRef)
               dataRef.value = Object.values(groupedCounts);
+              console.log(dataRef)
             }
           } else {
             labelsRef.value = [];
@@ -313,7 +317,7 @@ export default {
         updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
         updateData('http://localhost:8080/tasks/count-rework'),
         updateData('http://localhost:8080/tasks/count-tasks-by-status'),
-        updateData('http://localhost:8080/users/average-time')
+        updateData('http://localhost:8080/tasks/average-time')
       ]),
       
       await nextTick(); 
@@ -350,8 +354,7 @@ export default {
       const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
       const isRework = url.includes('count-rework'); 
       const isTasksByStatus = url.includes('count-tasks-by-status'); 
-      const isTempoMedio = url.includes('/users/average-time');
-
+      const isTempoMedio = url.includes('average-time');
       
       await Promise.all([
         isCountByTag 
@@ -375,11 +378,7 @@ export default {
           : Promise.resolve(),
 
         isTempoMedio
-          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, (data) => {
-              const labels = data.map(item => `${item.userName} - ${item.milestoneName}`);
-              const dataPoints = data.map(item => parseFloat(item.tempoMedio));
-              return { labels, dataPoints };
-            })
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
           : Promise.resolve()
       ]);
     };
@@ -392,11 +391,7 @@ export default {
         fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
         fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
         fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/users/average-time', labelsTempoMedio, dataTempoMedio, (data) => {
-          const labels = data.map(item => `${item.userName} - ${item.milestoneName}`);
-          const dataPoints = data.map(item => parseFloat(item.tempoMedio));
-          return { labels, dataPoints };
-        }),
+        fetchData('http://localhost:8080/tasks/average-time', labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
       ]);
 
       await nextTick(); 
