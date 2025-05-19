@@ -5,7 +5,7 @@ on:
     branches: [ "main", "Sprint-*", "VSN-*" ]
 
 jobs:
-  Build:
+  build:
     runs-on: ubuntu-latest
 
     strategy:
