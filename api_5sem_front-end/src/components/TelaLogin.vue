@@ -5,9 +5,12 @@
     </div>
     <div class="login-box">
       <h1>Login</h1>
+      <div v-if="showPopup" class="popup">
+        {{ popupMessage }}
+      </div>
       <form class="form" @submit.prevent="handleLogin">
-        <input type="text" v-model="username" placeholder="Usuário do Taiga" required />
-        <input type="password" v-model="password" placeholder="Senha do Taiga" required />
+        <input type="text" v-model="username" placeholder="Usuário do Taiga" />
+        <input type="password" v-model="password" placeholder="Senha do Taiga" />
         <button type="submit">Entrar</button>
       </form>
     </div>
@@ -23,30 +26,41 @@ import LogoVisionLoginImg from '@/assets/LogoVisionLoginImg.png';
 export default defineComponent({
   name: 'TelaLogin',
   setup() {
+    const showPopup = ref(false);
+    const popupMessage = ref('');
     const username = ref('');
     const password = ref('');
     const logoSrc = LogoVisionLoginImg;
     const router = useRouter();
 
     const handleLogin = async () => {
+      if (!username.value || !password.value) {
+        popupMessage.value = 'Preencha todos os campos!';
+        showPopup.value = true;
+
+        setTimeout(() => {
+          showPopup.value = false;
+        }, 3000);
+        return;
+      }
+
       try {
         const response = await axios.post('http://localhost:8080/users/login', null, {
           params: {
             username: username.value,
             password: password.value
           },
-
-        headers: {
-          'Content-Type': 'application/json',
-        }
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
 
         const { token, role } = response.data;
         
-        localStorage.setItem('authToken', token.value);
+        localStorage.setItem('authToken', token);
         localStorage.setItem('username', username.value);
-        localStorage.setItem('role', role.value);
-        
+        localStorage.setItem('role', role);
+
         if (role === 'PRODUCT OWNER') {
           router.push('/ResultadosDoAdmin');
         } else if (role === 'STAKEHOLDER') {
@@ -58,7 +72,11 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Erro no login:', error);
-        alert('Usuário ou senha inválidos!');
+        popupMessage.value = 'Usuário ou senha inválidos!';
+        showPopup.value = true;
+        setTimeout(() => {
+          showPopup.value = false;
+        }, 3000);
       }
     };
 
@@ -67,6 +85,8 @@ export default defineComponent({
       password,
       handleLogin,
       logoSrc,
+      showPopup,
+      popupMessage,
     };
   },
 });
@@ -202,6 +222,17 @@ export default defineComponent({
 
 .login-box button:hover {
   background-color: #357ab8;
+}
+
+.popup {
+  background-color: #c51205;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 @media screen and (max-width: 768px) {
