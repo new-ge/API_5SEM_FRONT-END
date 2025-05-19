@@ -1,4 +1,4 @@
-name: build (20.17.0)
+name: build
 
 on:
   push:
