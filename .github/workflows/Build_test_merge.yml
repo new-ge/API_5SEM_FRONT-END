@@ -1,4 +1,4 @@
-name: Build_test_merge
+name: build (20.17.0)
 
 on:
   pull_request:
