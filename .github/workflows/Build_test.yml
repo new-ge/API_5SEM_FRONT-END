@@ -1,11 +1,11 @@
-name: Build and Test
+name: Build_test
 
 on:
   push:
     branches: [ "main", "Sprint-*", "VSN-*" ]
 
 jobs:
-  build_and_test:
+  Build_test:
     runs-on: ubuntu-latest
 
     strategy:
