@@ -1,11 +1,11 @@
-name: Node.js CI
+name: Build_test_merge
 
 on:
   pull_request:
     branches: [ "main", "Sprint-*", "VSN-*" ]
 
 jobs:
-  build_and_test:
+  Build_test_merge:
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,7 +34,7 @@ jobs:
         working-directory: ./api_5sem_front-end
 
   merge:
-    needs: build_and_test
+    needs: Build_test_merge
     runs-on: ubuntu-latest
     permissions:
       contents: write
