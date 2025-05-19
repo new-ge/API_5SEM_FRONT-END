@@ -50,16 +50,48 @@
         <span class="user-role">Gestor</span>
       </header>
       <header class="header-mobile">
-      <div class="logo">
-        <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
-      </div>
-      <button onclick="menu()" id="btn-menu">
-        <span class="linha"></span>
-        <span class="linha"></span>
-        <span class="linha"></span>
-      </button>        
-        <span class="user-role">Gestor</span>
+        <div class="elementos">
+          <div class="logo">
+            <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
+          </div>
+          <button class="btn-menu" @click="toggleMenu" id="btn-menu">
+            <span class="linha"></span>
+            <span class="linha"></span>
+            <span class="linha"></span>
+          </button>        
+          <span class="user-role">Gestor</span>
+        </div>
+        <div class="filters">
+              <select v-model="selectedProject">
+                <option value="">Todos os projetos</option>
+                <option v-for="project in projectList" :key="project" :value="project">
+                  {{ project }}
+                </option>
+              </select>
+              <select  v-model="selectedOperator">
+                <option value="">Todos os operadores</option>
+                <option v-for="operator in operatorList" :key= "operator" :value="operator">
+                  {{ operator }}
+                </option>
+              </select>
+              <select v-model="selectedSprint">
+                <option value="">Todas as sprints</option>
+                <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                  {{ sprint }}
+                </option>
+              </select>
+            <div>
+              <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+            </div>
+          </div>
       </header>
+      <div class="menu-mobile" v-show="menuAberto">
+        <nav>
+          <button class="btn-close" @click="toggleMenu">X</button>
+          <a href="#">Exportar</a>
+          <router-link to="/" class="logout-link">Logout</router-link>
+        </nav>
+      </div>
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -133,6 +165,13 @@ Chart.register(...registerables);
 
 export default {
   setup() {
+
+    const menuAberto = ref(false)
+
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
+
     const labels = ref(['test', 'test2', 'test3', 'test4']);
     const data = ref([1, 2, 3, 4]);
 
@@ -148,8 +187,8 @@ export default {
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
     const selectedProject = ref('');
@@ -240,7 +279,6 @@ export default {
 
         if (Array.isArray(data)) {
           data.forEach(item => {
-            console.log(item.milestoneName);
             sprintSet.add(item.milestoneName);
             operatorSet.add(item.userName);
             projectSet.add(item.projectName);
@@ -268,6 +306,8 @@ export default {
               'finished' in data[data.length - 2]) ? 'rework-finished' :
               null
           );
+          console.log(typeof data)
+          console.log(keyToGroup)
 
           if (keyToGroup) {
             if (keyToGroup === 'rework-finished') {
@@ -290,11 +330,14 @@ export default {
                 if (key != null) {
                   const quant = item.quant ?? 0;
                   groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                  console.log(quant)
                 }
               });
 
               labelsRef.value = Object.keys(groupedCounts);
+              console.log(labelsRef)
               dataRef.value = Object.values(groupedCounts);
+              console.log(dataRef)
             }
           } else {
             labelsRef.value = [];
@@ -323,6 +366,7 @@ export default {
         updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
         updateData('http://localhost:8080/tasks/count-rework'),
         updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+        updateData('http://localhost:8080/tasks/average-time')
       ]),
       
       await nextTick(); 
@@ -335,6 +379,7 @@ export default {
     });
 
     const updateData = async (url) => {
+      
       const params = [];
 
       if (selectedSprint.value) {
@@ -358,6 +403,7 @@ export default {
       const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
       const isRework = url.includes('count-rework'); 
       const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      const isTempoMedio = url.includes('average-time');
       
       await Promise.all([
         isCountByTag 
@@ -378,6 +424,10 @@ export default {
 
         isTasksByStatus
           ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve(),
+
+        isTempoMedio
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
           : Promise.resolve()
       ]);
     };
@@ -389,8 +439,10 @@ export default {
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
         fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
         fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
-      ]),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/average-time', labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
+      ]);
+
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
@@ -401,16 +453,18 @@ export default {
     });
 
     return {
+      menuAberto, toggleMenu,
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
       selectedProject, selectedOperator, selectedSprint, 
-      projectList, operatorList, sprintList,
-      clearFilters
+      projectList, operatorList, sprintList, clearFilters
     };
   }
+
 };
+
 </script>
 
 <style scoped>
@@ -511,7 +565,7 @@ html, body {
 }
 
 .filters select{
-  border:2px solid #00779d;
+  border:2px solid #004a6e;
   border-radius: 5px;
   padding: 8px;
   background-color: #f9f9f9;
@@ -525,6 +579,13 @@ html, body {
 .filters {
   display: flex;
   gap: 15px;
+}
+
+.btn-clear {
+  height: 101%;
+  border: 2px solid #004a6e;
+  border-radius: 5px;
+  margin-bottom: 8px;
 }
 
 .user-role {
@@ -743,20 +804,57 @@ p {
 
 @media screen and (max-width: 768px) {
 
-  .sidebar, .filters, .header{
+  .sidebar, .header{
     display: none;
   }
 
   .icon-logo {
     width: 6em;
-}
+  }
 
   .header-mobile {    
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 66%;
-    height: 8%;
+    height: 15%;
+  }
+
+  .elementos{
+    display: flex;
+    flex-direction: row;
     justify-content: space-between;
+    height: 39%;
+    align-items: center;
+  }
+
+  .logo {
+    height: 54%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 42%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 52%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
   }
 
   #btn-menu {
@@ -766,9 +864,10 @@ p {
     border-radius: 7px;
     background: transparent;
     display: flex;
-    margin-top: 7px;
+    margin-top: 3px;
     flex-direction: column;
     justify-content: center;
+    margin-right: 4%;
   }
 
   .linha {
@@ -786,7 +885,6 @@ p {
     color: #3ab6ff;
     margin-right: 10px;
     display: flex;
-    align-items: center;  
   }
 
   .title {
@@ -858,5 +956,42 @@ p {
   .chart-box2 {
     font-size: 15px;
   }
+
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
+
 }
 </style>
