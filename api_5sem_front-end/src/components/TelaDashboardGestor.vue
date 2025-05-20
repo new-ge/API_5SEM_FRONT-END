@@ -172,8 +172,8 @@ export default {
       menuAberto.value = !menuAberto.value
     }
 
-    const labels = ref(['test', 'test2', 'test3', 'test4']);
-    const data = ref([1, 2, 3, 4]);
+    const labels = ref([]);
+    const data = ref([]);
 
     const labelsFinalizados = ref([]);
     const dataFinalizados = ref([]);
@@ -181,8 +181,8 @@ export default {
     const labelsCriados = ref([]);
     const dataCriados = ref([]);  
 
-    const labels2 = ref(['teasdast', 'test2', 'test3', 'test4']);
-    const data2 = ref([1, 2, 3, 4]);
+    const labels2 = ref([]);
+    const data2 = ref([]);
 
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
@@ -218,7 +218,6 @@ export default {
         console.error(`Erro ao obter contexto 2D para '${chartId}'.`);
         return;
       }
-
       if (chartInstances[chartId]) {
         chartInstances[chartId].destroy();
       }
@@ -346,7 +345,6 @@ export default {
         } else if (typeof data === 'object' && data !== null) {
           const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
           const quant = data.quant ?? 0;
-
           if (key) {
             labelsRef.value = [key];
             dataRef.value = [quant];
@@ -462,7 +460,6 @@ export default {
       projectList, operatorList, sprintList, clearFilters
     };
   }
-
 };
 
 </script>
