@@ -3,14 +3,12 @@
     <div class="logo-container">
       <img :src="logoSrc" alt="Logo Vision" class="logo" />
     </div>
+
     <div class="login-box">
       <h1>Login</h1>
-      <div v-if="showPopup" class="popup">
-        {{ popupMessage }}
-      </div>
-      <form class="form" @submit.prevent="handleLogin">
-        <input type="text" v-model="username" placeholder="Usuário do Taiga" />
-        <input type="password" v-model="password" placeholder="Senha do Taiga" />
+      <form @submit.prevent="handleLogin">
+        <input type="text" v-model="username" placeholder="Usuário do Taiga" required />
+        <input type="password" v-model="password" placeholder="Senha do Taiga" required />
         <button type="submit">Entrar</button>
       </form>
     </div>
@@ -26,57 +24,43 @@ import LogoVisionLoginImg from '@/assets/LogoVisionLoginImg.png';
 export default defineComponent({
   name: 'TelaLogin',
   setup() {
-    const showPopup = ref(false);
-    const popupMessage = ref('');
     const username = ref('');
     const password = ref('');
     const logoSrc = LogoVisionLoginImg;
     const router = useRouter();
 
     const handleLogin = async () => {
-      if (!username.value || !password.value) {
-        popupMessage.value = 'Preencha todos os campos!';
-        showPopup.value = true;
-
-        setTimeout(() => {
-          showPopup.value = false;
-        }, 3000);
-        return;
-      }
-
       try {
         const response = await axios.post('http://localhost:8080/users/login', null, {
           params: {
+            projectId: 1641986, 
             username: username.value,
             password: password.value
           },
-          headers: {
-            'Content-Type': 'application/json',
-          }
+
+        headers: {
+        'Content-Type': 'application/json',
+        }
         });
 
         const { token, role } = response.data;
         
-        localStorage.setItem('authToken', token);
+        localStorage.setItem('authToken', token.value);
         localStorage.setItem('username', username.value);
-        localStorage.setItem('role', role);
-
+        localStorage.setItem('role', role.value);
+        
         if (role === 'PRODUCT OWNER') {
-          router.push('/ResultadosDoAdmin');
+          router.push('/ResultadosdoOperador');
         } else if (role === 'STAKEHOLDER') {
-          router.push('/ResultadosDoGestor');
+          router.push('/ResultadosdoGestor');
         } else if (['UX', 'BACK', 'FRONT', 'DESIGN'].includes(role)) {
-          router.push('/ResultadosDoOperador');
+          router.push('/ResultadosdoOperador');
         } else {
           alert('Role não reconhecida: ' + role);
         }
       } catch (error) {
         console.error('Erro no login:', error);
-        popupMessage.value = 'Usuário ou senha inválidos!';
-        showPopup.value = true;
-        setTimeout(() => {
-          showPopup.value = false;
-        }, 3000);
+        alert('Usuário ou senha inválidos!');
       }
     };
 
@@ -85,12 +69,11 @@ export default defineComponent({
       password,
       handleLogin,
       logoSrc,
-      showPopup,
-      popupMessage,
     };
   },
 });
 </script>
+
 
 <style scoped>
 .container {
@@ -103,76 +86,8 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
-.logo {
-  width: 25vw;
-  margin-top: -14vw;
-  margin-bottom: -10vh;
-}
-
 .logo-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
 
-.login-box {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  width: 27%;
-  height: 40%;
-  max-width: 314px;
-  max-height: 293px;
-  text-align: center;
-}
-
-.login-box h1 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.5rem;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.login-box input {
-  width: 92%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-.login-box button {
-  width: 100%;
-  margin-top: 6%;
-  padding: 0.75rem;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.login-box button:hover {
-  background-color: #357ab8;
-}
-
-.container {
-  width: 98vw;
-  height: 97vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
 }
 
 .logo {
@@ -224,35 +139,18 @@ export default defineComponent({
   background-color: #357ab8;
 }
 
-.popup {
-  background-color: #c51205;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  text-align: center;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-@media screen and (max-width: 768px) {
+@media (max-width: 600px) {
   .login-box {
-    width: 66%;
-    height: 50%;
-  }
-
-  .login-box input {
-    width: 90%;
+    padding: 1.5rem;
   }
 
   .login-box h1 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
   }
 
   .logo {
-    width: 50vw;
-    margin-top: -14vw;
-    margin-bottom: -10vh;
+    max-width: 180px;
   }
 }
+
 </style>
