@@ -119,10 +119,6 @@ export default {
   setup() {
 
     const menuAberto = ref(false)
-
-    function toggleMenu() {
-      menuAberto.value = !menuAberto.value
-    }
     
     const labels = ref([]);
     const data = ref([]);
@@ -139,10 +135,14 @@ export default {
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
+
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
 
     function renderChart(chartId, label, labels, data, type) {
       
@@ -264,7 +264,6 @@ export default {
         } else if (typeof data === 'object' && data !== null) {
           const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
           const quant = data.quant ?? 0;
-
           if (key) {
             labelsRef.value = [key];
             dataRef.value = [quant];
@@ -610,7 +609,6 @@ p {
 }
 
 @media screen and (max-width: 768px) {
-
   .sidebar, .filters, .header{
     display: none;
   }
@@ -682,6 +680,7 @@ p {
   .titulos {
     min-width: 0px;
   }
+
   .cards-container {
     display: flex;
     justify-content: center;
