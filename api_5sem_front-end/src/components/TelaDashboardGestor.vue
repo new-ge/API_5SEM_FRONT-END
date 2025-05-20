@@ -114,11 +114,11 @@ export default {
     const labels2 = ref([]);
     const data2 = ref([]);
 
-    const labelsRetrabalhos = ref(['Retrabalhos', 'Entregas']);
-    const dataRetrabalhos = ref([10, 45]);
+    const labelsRetrabalhos = ref([]);
+    const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
 
