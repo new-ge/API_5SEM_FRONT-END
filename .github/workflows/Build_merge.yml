@@ -5,7 +5,7 @@ on:
     branches: [ "main", "Sprint-*", "VSN-*" ]
 
 jobs:
-  Build_test_merge:
+  Build:
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,7 +34,7 @@ jobs:
         working-directory: ./api_5sem_front-end
 
   merge:
-    needs: Build_test_merge
+    needs: Build
     runs-on: ubuntu-latest
     permissions:
       contents: write
