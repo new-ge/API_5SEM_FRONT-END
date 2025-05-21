@@ -24,6 +24,17 @@
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
+        <div class="filters">
+            <select v-model="selectedSprint">
+              <option value="">Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
+              </option>
+            </select>
+          <div>
+            <button class="btn-clear" @click="clearFilters">Limpar Filtro</button>
+          </div>
+        </div>
         <span class="user-role">Operador</span>
       </header>
       <header class="header-mobile">
@@ -110,7 +121,7 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick,watch } from 'vue';
 import axios from 'axios';
 
 Chart.register(...registerables);
@@ -118,7 +129,11 @@ Chart.register(...registerables);
 export default {
   setup() {
 
-    const menuAberto = ref(false)
+    const menuAberto = ref(false);
+    
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
     
     const labels = ref([]);
     const data = ref([]);
@@ -140,9 +155,13 @@ export default {
 
     const chartInstances = {};
 
-    function toggleMenu() {
-      menuAberto.value = !menuAberto.value
-    }
+    const selectedSprint = ref('');
+    const sprintList = ref ([]);
+
+    const clearFilters = () => {
+      selectedSprint.value = '';
+    };
+
 
     function renderChart(chartId, label, labels, data, type) {
       
@@ -206,11 +225,36 @@ export default {
         }
       });
     }
+    
+    const fetchSprints = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/tasks/sprints-for-operator');
+        if (Array.isArray(response.data)) {
+          sprintList.value = response.data.map(item => item.milestoneName);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar as sprints:', error);
+      }
+    };
 
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
         const response = await axios.get(url);
         const data = response.data;
+
+        const sprintSet = new Set();
+        const operatorSet = new Set();
+        const projectSet = new Set();
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            sprintSet.add(item.milestoneName);
+            operatorSet.add(item.userName);
+            projectSet.add(item.projectName);
+          });
+
+          sprintList.value = Array.from(sprintSet);
+        }
 
         if (transformFunction && typeof transformFunction === 'function') {
           const { labels, dataPoints } = transformFunction(data);
@@ -275,7 +319,70 @@ export default {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
+    watch([selectedSprint], async () => {
+      await Promise.all([
+        updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
+        updateData('http://localhost:8080/tasks/tasks-per-sprint'),
+        updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
+        updateData('http://localhost:8080/tasks/count-rework'),
+        updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+        updateData('http://localhost:8080/tasks/average-time')
+      ]),
+      
+      await nextTick(); 
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    });
 
+    const updateData = async (url) => {
+      
+      const params = [];
+
+      if (selectedSprint.value) {
+        params.push(`milestone=${encodeURIComponent(selectedSprint.value)}`);
+      }
+      const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
+
+      console.log(fullUrl)
+
+      const isCountByTag = url.includes('count-tasks-by-tag');
+      const isTasksPerSprint = url.includes('tasks-per-sprint');
+      const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
+      const isRework = url.includes('count-rework'); 
+      const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      const isTempoMedio = url.includes('average-time');
+        
+      await Promise.all([
+        isCountByTag 
+          ? fetchData(fullUrl, labels, data, null, 'tagName') 
+          : Promise.resolve(),
+
+        isTasksPerSprint 
+          ? fetchData(fullUrl, labelsCriados, dataCriados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isTasksClosedPerSprint
+          ? fetchData(fullUrl, labelsFinalizados, dataFinalizados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isRework
+          ? fetchData(fullUrl, labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished') 
+          : Promise.resolve(),
+
+        isTasksByStatus
+          ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve(),
+
+        isTempoMedio
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
+          : Promise.resolve()
+      ]);
+    };
+    
     onMounted(async () => {
       await axios.get('http://localhost:8080/tasks/sync-all-process'),
       await Promise.all([
@@ -298,8 +405,8 @@ export default {
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
-      labelsRetrabalhos, dataRetrabalhos,
-      fetchData
+      labelsRetrabalhos, dataRetrabalhos,fetchSprints, fetchData,
+      selectedSprint, sprintList, clearFilters
     };
   }
 };
@@ -398,6 +505,30 @@ html, body {
 
 .header-mobile {
   display: none;
+}
+
+.filters select{
+  border:2px solid #004a6e;
+  border-radius: 5px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  transition: filter 0.3s ease-in-out;
+}
+
+.filters select:hover {
+  filter: brightness(1.2) contrast(1.3); 
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-clear {
+  height: 101%;
+  border: 2px solid #004a6e;
+  border-radius: 5px;
+  margin-bottom: 8px;
 }
 
 .bk-charts {
