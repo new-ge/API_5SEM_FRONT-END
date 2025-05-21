@@ -799,5 +799,196 @@ p {
   max-height: 100vh;
 }
 
+@media screen and (max-width: 768px) {
 
+  .sidebar, .header{
+    display: none;
+  }
+
+  .icon-logo {
+    width: 6em;
+  }
+
+  .header-mobile {    
+    display: flex;
+    flex-direction: column;
+    width: 66%;
+    height: 15%;
+  }
+
+  .elementos{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 39%;
+    align-items: center;
+  }
+
+  .logo {
+    height: 54%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 42%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 52%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
+  #btn-menu {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #3ab6ff;
+    border-radius: 7px;
+    background: transparent;
+    display: flex;
+    margin-top: 3px;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 8%;
+  }
+
+  .linha {
+    width: 15px;
+    height: 2px;
+    background-color: #3ab6ff;
+    display: block;
+    margin: 3px auto;
+    position: relative;
+    transform-origin: center;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .bk-charts {
+    flex-direction: column;
+    height: 100%;
+    width: 67%;
+    overflow-y: auto;
+  }
+
+  .charts {
+    width: 98%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-group {
+    width: 76%;
+    min-width: 98%;
+  }
+
+  .titulos {
+    min-width: 0px;
+  }
+  .cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    width: 99%;
+    height: 25%;
+    font-size: 10px;
+  }
+
+  .card {
+    width: 21%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .chart-group2 {
+    height: 49%;
+  }
+
+  .chart-container2 {
+    height: 82%;
+  }
+
+  .chart-container3 {
+    height: 58%;
+  }
+
+  .charts1 {
+    width: 98%;
+  }
+
+  .charts2 {
+    height: 50%;
+    width: 98%;
+  }
+
+  .chart-group4 {
+    width: 100%;
+  }
+
+  .chart-box2 {
+    font-size: 15px;
+  }
+
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
+
+}
 </style>
