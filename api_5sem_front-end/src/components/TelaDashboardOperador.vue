@@ -9,7 +9,7 @@
           <img src="/homeLogo.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
-          <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
+          <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
