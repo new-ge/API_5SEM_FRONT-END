@@ -165,7 +165,6 @@ Chart.register(...registerables);
 
 export default {
   setup() {
-
     const menuAberto = ref(false)
 
     function toggleMenu() {
