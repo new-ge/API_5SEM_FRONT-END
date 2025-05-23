@@ -269,7 +269,7 @@ export default {
     
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
-        const response = await axios.get(url);
+        const response = await axios.get('http://localhost:8080/tasks/sprints-for-admin');
         const data = response.data;
 
         const sprintSet = new Set();
