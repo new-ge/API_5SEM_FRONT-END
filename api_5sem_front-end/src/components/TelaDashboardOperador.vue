@@ -260,13 +260,15 @@ export default {
         const projectSet = new Set();
 
         if (Array.isArray(data)) {
-          data.forEach(item => {
-            sprintSet.add(item.milestoneName);
-            operatorSet.add(item.userName);
-            projectSet.add(item.projectName);
-          });
+          if (sprintList.value.length == 0) {
+            data.forEach(item => {
+              sprintSet.add(item.milestoneName);
+              operatorSet.add(item.userName);
+              projectSet.add(item.projectName);
+            });
 
-          sprintList.value = Array.from(sprintSet);
+            sprintList.value = Array.from(sprintSet);
+          }
         }
 
         if (transformFunction && typeof transformFunction === 'function') {
