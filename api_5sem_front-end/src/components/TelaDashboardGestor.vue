@@ -8,9 +8,9 @@
         <button class="sidebar-button">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
-        <button class="sidebar-button">
+        <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank" class="sidebar-button">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
-        </button>
+        </a>
       </div>
       <router-link to="/">
       <button class="sidebar-button logout">
@@ -86,7 +86,7 @@
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#">Exportar</a>
-          <a href="#">Manual de Uso</a>
+          <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
       </div>
