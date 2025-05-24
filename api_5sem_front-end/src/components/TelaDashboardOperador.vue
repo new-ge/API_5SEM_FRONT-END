@@ -8,9 +8,9 @@
         <button class="sidebar-button" @click="exportFile">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
-        <button class="sidebar-button">
+        <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank" class="sidebar-button">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
-        </button>
+        </a>
       </div>
       <router-link to="/">
       <button class="sidebar-button logout">
@@ -65,6 +65,7 @@
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#" @click="exportFile">Exportar</a>
           <a href="#">Manual de Uso</a>
+          <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
       </div>
@@ -269,17 +270,17 @@ export default {
         const data = response.data;
 
         const sprintSet = new Set();
-        const operatorSet = new Set();
-        const projectSet = new Set();
 
         if (Array.isArray(data)) {
-          data.forEach(item => {
-            sprintSet.add(item.milestoneName);
-            operatorSet.add(item.userName);
-            projectSet.add(item.projectName);
-          });
+          if (sprintList.value.length == 0) {
+            data.forEach(item => {
+              sprintSet.add(item.milestoneName);
+            });
 
-          sprintList.value = Array.from(sprintSet);
+            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+          }
         }
 
         if (transformFunction && typeof transformFunction === 'function') {
