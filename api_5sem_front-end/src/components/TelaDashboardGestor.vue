@@ -60,19 +60,19 @@
         </div>
         <div class="filters">
               <select v-model="selectedProject">
-                <option value="" selected>Todos os projetos</option>
+                <option value="">Todos os projetos</option>
                 <option v-for="project in projectList" :key="project" :value="project">
                   {{ project }}
                 </option>
               </select>
               <select  v-model="selectedOperator">
-                <option value="" selected>Todos os operadores</option>
+                <option value="">Todos os operadores</option>
                 <option v-for="operator in operatorList" :key= "operator" :value="operator">
                   {{ operator }}
                 </option>
               </select>
               <select v-model="selectedSprint">
-                <option value="" selected>Todas as sprints</option>
+                <option value="">Todas as sprints</option>
                 <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
                   {{ sprint }}
                 </option>
@@ -86,8 +86,6 @@
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#" @click="exportFile">Exportar</a>
-          <a href="#">Manual de Uso</a>
-          <a href="#">Exportar</a>
           <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>

@@ -23,7 +23,7 @@
         <p class="title">Resultados</p>
         <div class="filters">
             <select v-model="selectedSprint">
-              <option value="" selected>Todas as sprints</option>
+              <option value="">Todas as sprints</option>
               <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
                 {{ sprint }}
               </option>
@@ -49,7 +49,7 @@
           <div class="linha2">
             <div class="filters">
               <select v-model="selectedSprint">
-              <option value="" selected>Todas as sprints</option>
+              <option value="">Todas as sprints</option>
               <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
                 {{ sprint }}
               </option>
@@ -64,7 +64,6 @@
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#" @click="exportFile">Exportar</a>
-          <a href="#">Manual de Uso</a>
           <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
@@ -346,6 +345,7 @@ export default {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
+
     watch([selectedSprint], async () => {
       await Promise.all([
         updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
@@ -434,6 +434,7 @@ export default {
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
+      selectedSprint, sprintList,
       fetchData, exportFile, clearFilters
     };
   }
