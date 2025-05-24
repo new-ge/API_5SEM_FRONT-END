@@ -5,7 +5,7 @@
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
       <div class="buttons-container">
-        <button class="sidebar-button">
+        <button class="sidebar-button" @click="exportFile">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
         <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank" class="sidebar-button">
@@ -85,7 +85,7 @@
       <div class="menu-mobile" v-show="menuAberto">
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
-          <a href="#">Exportar</a>
+          <a href="#" @click="exportFile">Exportar</a>
           <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
@@ -203,6 +203,30 @@ export default {
       selectedSprint.value = '';
     };
 
+    function exportFile() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const dd = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+      
+      axios.get('http://localhost:8080/tasks/request-excel', { responseType: 'blob' })
+        .then(response => {
+          const blob = response.data;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio-${formattedDate}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Erro ao exportar:', error);
+        });
+    }
+
     function renderChart(chartId, label, labels, data, type) {
       
       const canvas = document.getElementById(chartId);
@@ -311,8 +335,6 @@ export default {
               'finished' in data[data.length - 2]) ? 'rework-finished' :
               null
           );
-          console.log(typeof data)
-          console.log(keyToGroup)
 
           if (keyToGroup) {
             if (keyToGroup === 'rework-finished') {
@@ -335,14 +357,11 @@ export default {
                 if (key != null) {
                   const quant = item.quant ?? 0;
                   groupedCounts[key] = (groupedCounts[key] || 0) + quant;
-                  console.log(quant)
                 }
               });
 
               labelsRef.value = Object.keys(groupedCounts);
-              console.log(labelsRef)
               dataRef.value = Object.values(groupedCounts);
-              console.log(dataRef)
             }
           } else {
             labelsRef.value = [];
@@ -399,8 +418,6 @@ export default {
       }
 
       const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
-
-      console.log(fullUrl)
 
       const isCountByTag = url.includes('count-tasks-by-tag');
       const isTasksPerSprint = url.includes('tasks-per-sprint');
@@ -464,7 +481,8 @@ export default {
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
       selectedProject, selectedOperator, selectedSprint, 
-      projectList, operatorList, sprintList, clearFilters
+      projectList, operatorList, sprintList, clearFilters,
+      fetchData, exportFile
     };
   }
 };

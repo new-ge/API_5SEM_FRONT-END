@@ -5,7 +5,7 @@
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
       <div class="buttons-container">
-        <button class="sidebar-button">
+        <button class="sidebar-button" @click="exportFile">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
         <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank" class="sidebar-button">
@@ -63,7 +63,7 @@
       <div class="menu-mobile" v-show="menuAberto">
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
-          <a href="#">Exportar</a>
+          <a href="#" @click="exportFile">Exportar</a>
           <a href="https://github.com/new-ge/VISION/wiki/4.-Documentação-de-Produto" target="_blank">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
@@ -238,17 +238,30 @@ export default {
         }
       });
     }
-    
-    const fetchSprints = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/tasks/sprints-for-operator');
-        if (Array.isArray(response.data)) {
-          sprintList.value = response.data.map(item => item.milestoneName);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar as sprints:', error);
-      }
-    };
+
+    function exportFile() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const dd = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+      
+      axios.get('http://localhost:8080/tasks/request-excel', { responseType: 'blob' })
+        .then(response => {
+          const blob = response.data;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio-${formattedDate}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Erro ao exportar:', error);
+        });
+    }
 
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
@@ -332,6 +345,7 @@ export default {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
+
     watch([selectedSprint], async () => {
       await Promise.all([
         updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
@@ -359,8 +373,6 @@ export default {
         params.push(`milestone=${encodeURIComponent(selectedSprint.value)}`);
       }
       const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
-
-      console.log(fullUrl)
 
       const isCountByTag = url.includes('count-tasks-by-tag');
       const isTasksPerSprint = url.includes('tasks-per-sprint');
@@ -419,8 +431,9 @@ export default {
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
-      labelsRetrabalhos, dataRetrabalhos,fetchSprints, fetchData,
-      selectedSprint, sprintList, clearFilters
+      labelsRetrabalhos, dataRetrabalhos,
+      selectedSprint, sprintList,
+      fetchData, exportFile, clearFilters
     };
   }
 };
