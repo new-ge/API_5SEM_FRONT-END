@@ -5,13 +5,10 @@
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
       <div class="buttons-container">
-        <button class="sidebar-button">
-          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-        </button>
-        <button class="sidebar-button">
-          <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
-        </button>
         <button class="sidebar-button" @click="exportFile">
+          <img src="/export.ico" alt="Dashboard" class="icon">
+        </button>
+        <button class="sidebar-button">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
@@ -24,8 +21,53 @@
     <main class="content">
       <header class="header">
         <p class="title">Resultados</p>
+        <div class="filters">
+            <select v-model="selectedSprint">
+              <option value="" selected>Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
+              </option>
+            </select>
+          <div>
+            <button class="btn-clear" @click="clearFilters">Limpar Filtro</button>
+          </div>
+        </div>
         <span class="user-role">Operador</span>
       </header>
+        <header class="header-mobile">
+          <div class="linha1">
+            <div class="logo">
+              <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
+            </div>
+            <button class="btn-menu" @click="toggleMenu" id="btn-menu">
+              <span class="linha"></span>
+              <span class="linha"></span>
+              <span class="linha"></span>
+            </button>        
+              <span class="user-role">Operador</span>
+          </div>
+          <div class="linha2">
+            <div class="filters">
+              <select v-model="selectedSprint">
+              <option value="" selected>Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
+              </option>
+              </select>
+            <div>
+              <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+            </div>  
+          </div>
+        </div>       
+        </header>
+      <div class="menu-mobile" v-show="menuAberto">
+        <nav>
+          <button class="btn-close" @click="toggleMenu">X</button>
+          <a href="#" @click="exportFile">Exportar</a>
+          <a href="#">Manual de Uso</a>
+          <router-link to="/" class="logout-link">Logout</router-link>
+        </nav>
+      </div>
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -92,13 +134,20 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick,watch } from 'vue';
 import axios from 'axios';
 
 Chart.register(...registerables);
 
 export default {
   setup() {
+
+    const menuAberto = ref(false);
+    
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
+    
     const labels = ref([]);
     const data = ref([]);
 
@@ -114,10 +163,18 @@ export default {
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
+
+    const selectedSprint = ref('');
+    const sprintList = ref ([]);
+
+    const clearFilters = () => {
+      selectedSprint.value = '';
+    };
+
 
     function renderChart(chartId, label, labels, data, type) {
       
@@ -183,35 +240,47 @@ export default {
     }
 
     function exportFile() {
-      axios.get('/request-excel', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => {
-        if (response.ok) {
-          return response.blob();
-        }
-        throw new Error('Falha ao exportar arquivo');
-      })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'persons.csv';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      })
-      .catch(error => {
-        console.error('Erro ao exportar:', error);
-      });
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const dd = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+      
+      axios.get('http://localhost:8080/tasks/request-excel', { responseType: 'blob' })
+        .then(response => {
+          const blob = response.data;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio-${formattedDate}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Erro ao exportar:', error);
+        });
     }
 
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
         const response = await axios.get(url);
         const data = response.data;
+
+        const sprintSet = new Set();
+        const operatorSet = new Set();
+        const projectSet = new Set();
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            sprintSet.add(item.milestoneName);
+            operatorSet.add(item.userName);
+            projectSet.add(item.projectName);
+          });
+
+          sprintList.value = Array.from(sprintSet);
+        }
 
         if (transformFunction && typeof transformFunction === 'function') {
           const { labels, dataPoints } = transformFunction(data);
@@ -265,7 +334,6 @@ export default {
         } else if (typeof data === 'object' && data !== null) {
           const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
           const quant = data.quant ?? 0;
-
           if (key) {
             labelsRef.value = [key];
             dataRef.value = [quant];
@@ -277,7 +345,70 @@ export default {
         console.error(`Erro ao buscar dados de ${url}:`, error);
       }
     };
+    watch([selectedSprint], async () => {
+      await Promise.all([
+        updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
+        updateData('http://localhost:8080/tasks/tasks-per-sprint'),
+        updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
+        updateData('http://localhost:8080/tasks/count-rework'),
+        updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+        updateData('http://localhost:8080/tasks/average-time')
+      ]),
+      
+      await nextTick(); 
+      renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
+      renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
+      renderChart('cardsCriados', 'Criados', labelsCriados.value, dataCriados.value, 'line');
+      renderChart('projetoAtual', 'Projeto Atual', labels2.value, data2.value, 'bar');
+      renderChart('Retrabalhos', 'Entregas', labelsRetrabalhos.value, dataRetrabalhos.value, 'pie');
+      renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
+    });
 
+    const updateData = async (url) => {
+      
+      const params = [];
+
+      if (selectedSprint.value) {
+        params.push(`milestone=${encodeURIComponent(selectedSprint.value)}`);
+      }
+      const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
+
+      console.log(fullUrl)
+
+      const isCountByTag = url.includes('count-tasks-by-tag');
+      const isTasksPerSprint = url.includes('tasks-per-sprint');
+      const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
+      const isRework = url.includes('count-rework'); 
+      const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      const isTempoMedio = url.includes('average-time');
+        
+      await Promise.all([
+        isCountByTag 
+          ? fetchData(fullUrl, labels, data, null, 'tagName') 
+          : Promise.resolve(),
+
+        isTasksPerSprint 
+          ? fetchData(fullUrl, labelsCriados, dataCriados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isTasksClosedPerSprint
+          ? fetchData(fullUrl, labelsFinalizados, dataFinalizados, null, 'milestoneName') 
+          : Promise.resolve(),
+
+        isRework
+          ? fetchData(fullUrl, labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished') 
+          : Promise.resolve(),
+
+        isTasksByStatus
+          ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve(),
+
+        isTempoMedio
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
+          : Promise.resolve()
+      ]);
+    };
+    
     onMounted(async () => {
       await axios.get('http://localhost:8080/tasks/sync-all-process'),
       await Promise.all([
@@ -285,7 +416,8 @@ export default {
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
         fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
         fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/average-time', labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
       ]),
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
@@ -296,11 +428,12 @@ export default {
       renderChart('TempoMedio', 'Tempo em Horas', labelsTempoMedio.value, dataTempoMedio.value, 'bar');
     });
     return {
+      menuAberto, toggleMenu,
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
       labelsRetrabalhos, dataRetrabalhos,
-      fetchData, exportFile
+      fetchData, exportFile, clearFilters
     };
   }
 };
@@ -395,6 +528,34 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
+}
+
+.header-mobile {
+  display: none;
+}
+
+.filters select{
+  border:2px solid #004a6e;
+  border-radius: 5px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  transition: filter 0.3s ease-in-out;
+}
+
+.filters select:hover {
+  filter: brightness(1.2) contrast(1.3); 
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-clear {
+  height: 101%;
+  border: 2px solid #004a6e;
+  border-radius: 5px;
+  margin-bottom: 8px;
 }
 
 .bk-charts {
@@ -500,10 +661,10 @@ html, body {
 }
 
 .chart-box2 {
-    background: white;
-    border-radius: 10px;
-    width: 50%;
-    height: 100%;
+  background: white;
+  border-radius: 10px;
+  width: 50%;
+  height: 100%;
 }
 
 .cards-container {
@@ -603,5 +764,217 @@ p {
 * {
   max-width: 100vw;
   max-height: 100vh;
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar, .filters, .header{
+    display: none;
+  }
+
+  .icon-logo {
+    width: 6em;
+  }
+
+  .header-mobile {    
+    display: flex;
+    flex-direction: column;
+    width: 66%;
+    height: 13%;
+    justify-content: space-between;
+  }
+
+  .linha1 {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 48%;
+    justify-content: space-between;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .linha2 {
+    width: 100%;
+    height: 50%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  #btn-menu {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #3ab6ff;
+    border-radius: 7px;
+    background: transparent;
+    display: flex;
+    margin-top: 7px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .linha {
+    width: 15px;
+    height: 2px;
+    background-color: #3ab6ff;
+    display: block;
+    margin: 3px auto;
+    position: relative;
+    transform-origin: center;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;  
+  }
+
+  .title {
+    display: none;
+  }
+
+  .bk-charts {
+    flex-direction: column;
+    height: 100%;
+    width: 68%;
+    overflow-y: auto;
+  }
+
+  .charts {
+    width: 98%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-group {
+    width: 76%;
+    min-width: 98%;
+  }
+
+  .titulos {
+    min-width: 0px;
+  }
+
+  .cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    width: 99%;
+    height: 25%;
+    font-size: 10px;
+  }
+
+  .card {
+    width: 21%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .chart-group2 {
+    height: 49%;
+  }
+
+  .chart-container2 {
+    height: 82%;
+  }
+
+  .chart-container3 {
+    height: 58%;
+  }
+
+  .charts1 {
+    width: 98%;
+  }
+
+  .charts2 {
+    height: 50%;
+    width: 98%;
+  }
+
+  .chart-group4 {
+    width: 100%;
+  }
+
+  .chart-box2 {
+    font-size: 15px;
+  }
+
+  .filters {
+    width: 98%;
+    height: 76%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 63%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
+
 }
 </style>

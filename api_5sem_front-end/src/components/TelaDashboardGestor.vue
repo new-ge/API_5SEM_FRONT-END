@@ -5,13 +5,10 @@
         <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
       </div>
       <div class="buttons-container">
-        <button class="sidebar-button">
-          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-        </button>
-        <button class="sidebar-button">
-          <img src="/scoreLogo.ico" alt="Dashboard" class="icon">
-        </button>
         <button class="sidebar-button" @click="exportFile">
+          <img src="/export.ico" alt="Dashboard" class="icon">
+        </button>
+        <button class="sidebar-button">
           <img src="/workLogo.ico" alt="Dashboard" class="icon">
         </button>
       </div>
@@ -23,8 +20,7 @@
     </aside>
     <main class="content">
       <header class="header">
-        <p class="title">Resultados</p>
-        
+        <p class="title">Resultados</p>        
         <div class="filters">
             <select v-model="selectedProject">
               <option value="">Todos os projetos</option>
@@ -50,6 +46,50 @@
         </div>
         <span class="user-role">Gestor</span>
       </header>
+      <header class="header-mobile">
+        <div class="elementos">
+          <div class="logo">
+            <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
+          </div>
+          <button class="btn-menu" @click="toggleMenu" id="btn-menu">
+            <span class="linha"></span>
+            <span class="linha"></span>
+            <span class="linha"></span>
+          </button>        
+          <span class="user-role">Gestor</span>
+        </div>
+        <div class="filters">
+              <select v-model="selectedProject">
+                <option value="" selected>Todos os projetos</option>
+                <option v-for="project in projectList" :key="project" :value="project">
+                  {{ project }}
+                </option>
+              </select>
+              <select  v-model="selectedOperator">
+                <option value="" selected>Todos os operadores</option>
+                <option v-for="operator in operatorList" :key= "operator" :value="operator">
+                  {{ operator }}
+                </option>
+              </select>
+              <select v-model="selectedSprint">
+                <option value="" selected>Todas as sprints</option>
+                <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                  {{ sprint }}
+                </option>
+              </select>
+            <div>
+              <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+            </div>
+          </div>
+      </header>
+      <div class="menu-mobile" v-show="menuAberto">
+        <nav>
+          <button class="btn-close" @click="toggleMenu">X</button>
+          <a href="#" @click="exportFile">Exportar</a>
+          <a href="#">Manual de Uso</a>
+          <router-link to="/" class="logout-link">Logout</router-link>
+        </nav>
+      </div>
       <div class="bk-charts">        
         <div class="charts">
           <div class="chart-group">
@@ -123,6 +163,12 @@ Chart.register(...registerables);
 
 export default {
   setup() {
+    const menuAberto = ref(false)
+
+    function toggleMenu() {
+      menuAberto.value = !menuAberto.value
+    }
+
     const labels = ref([]);
     const data = ref([]);
 
@@ -138,8 +184,8 @@ export default {
     const labelsRetrabalhos = ref([]);
     const dataRetrabalhos = ref([]);
 
-    const labelsTempoMedio = ref(['tasks','teste','teste2','teste3']);
-    const dataTempoMedio = ref([9, 3, 2, 5]);
+    const labelsTempoMedio = ref([]);
+    const dataTempoMedio = ref([]);
 
     const chartInstances = {};
     const selectedProject = ref('');
@@ -169,7 +215,6 @@ export default {
         console.error(`Erro ao obter contexto 2D para '${chartId}'.`);
         return;
       }
-
       if (chartInstances[chartId]) {
         chartInstances[chartId].destroy();
       }
@@ -219,27 +264,28 @@ export default {
       });
     }
 
-    const exportFile = () => {
-      axios.get('http://localhost:8080/tasks/request-excel', {
-        responseType: 'blob',
-      })
-      .then(response => {
-        if (response.status === 200) {
+    function exportFile() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const dd = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+      axios.get('http://localhost:8080/tasks/request-excel', { responseType: 'blob' })
+        .then(response => {
           const blob = response.data;
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = 'relatorio.xlsx';
+          a.download = `relatorio-${formattedDate}.xlsx`;
           document.body.appendChild(a);
           a.click();
           a.remove();
-        } else {
-          throw new Error('Falha ao exportar arquivo');
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao exportar:', error);
-      });
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Erro ao exportar:', error);
+        });
     }
     
     const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
@@ -253,7 +299,6 @@ export default {
 
         if (Array.isArray(data)) {
           data.forEach(item => {
-            console.log(item.milestoneName);
             sprintSet.add(item.milestoneName);
             operatorSet.add(item.userName);
             projectSet.add(item.projectName);
@@ -281,6 +326,8 @@ export default {
               'finished' in data[data.length - 2]) ? 'rework-finished' :
               null
           );
+          console.log(typeof data)
+          console.log(keyToGroup)
 
           if (keyToGroup) {
             if (keyToGroup === 'rework-finished') {
@@ -303,11 +350,14 @@ export default {
                 if (key != null) {
                   const quant = item.quant ?? 0;
                   groupedCounts[key] = (groupedCounts[key] || 0) + quant;
+                  console.log(quant)
                 }
               });
 
               labelsRef.value = Object.keys(groupedCounts);
+              console.log(labelsRef)
               dataRef.value = Object.values(groupedCounts);
+              console.log(dataRef)
             }
           } else {
             labelsRef.value = [];
@@ -316,7 +366,6 @@ export default {
         } else if (typeof data === 'object' && data !== null) {
           const key = groupByKey && groupByKey in data ? data[groupByKey] : null;
           const quant = data.quant ?? 0;
-
           if (key) {
             labelsRef.value = [key];
             dataRef.value = [quant];
@@ -336,6 +385,7 @@ export default {
         updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
         updateData('http://localhost:8080/tasks/count-rework'),
         updateData('http://localhost:8080/tasks/count-tasks-by-status'),
+        updateData('http://localhost:8080/tasks/average-time')
       ]),
       
       await nextTick(); 
@@ -348,6 +398,7 @@ export default {
     });
 
     const updateData = async (url) => {
+      
       const params = [];
 
       if (selectedSprint.value) {
@@ -371,6 +422,7 @@ export default {
       const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 
       const isRework = url.includes('count-rework'); 
       const isTasksByStatus = url.includes('count-tasks-by-status'); 
+      const isTempoMedio = url.includes('average-time');
       
       await Promise.all([
         isCountByTag 
@@ -391,6 +443,10 @@ export default {
 
         isTasksByStatus
           ? fetchData(fullUrl, labels2, data2, null, 'statusName') 
+          : Promise.resolve(),
+
+        isTempoMedio
+          ? fetchData(fullUrl, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
           : Promise.resolve()
       ]);
     };
@@ -402,8 +458,10 @@ export default {
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
         fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
         fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName')
-      ]),
+        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
+        fetchData('http://localhost:8080/tasks/average-time', labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
+      ]);
+
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
       renderChart('cardsFinalizados', 'Finalizados', labelsFinalizados.value, dataFinalizados.value, 'line');
@@ -414,6 +472,7 @@ export default {
     });
 
     return {
+      menuAberto, toggleMenu,
       labels, labels2, data, data2, labelsTempoMedio, dataTempoMedio,
       labelsFinalizados, dataFinalizados, 
       labelsCriados, dataCriados,
@@ -424,6 +483,7 @@ export default {
     };
   }
 };
+
 </script>
 
 <style scoped>
@@ -515,24 +575,36 @@ html, body {
   margin-top: -3px;
   margin-left: -3px;
   margin-right: -4px;
-  background-color: #ffffff; /* Fundo branco */
-  filter: brightness(1.1) contrast(1.2); /* Filtro aplicado no header */
-
+  background-color: #ffffff;
+  filter: brightness(1.1) contrast(1.2);
 }
+
+.header-mobile {
+  display: none;
+}
+
 .filters select{
-  border:2px solid #00779d;
+  border:2px solid #004a6e;
   border-radius: 5px;
   padding: 8px;
   background-color: #f9f9f9;
   transition: filter 0.3s ease-in-out;
 }
+
 .filters select:hover {
-  filter: brightness(1.2) contrast(1.3); /* Filtro para quando o select for hover */
+  filter: brightness(1.2) contrast(1.3); 
 }
 
 .filters {
   display: flex;
   gap: 15px;
+}
+
+.btn-clear {
+  height: 101%;
+  border: 2px solid #004a6e;
+  border-radius: 5px;
+  margin-bottom: 8px;
 }
 
 .user-role {
@@ -644,10 +716,10 @@ html, body {
 }
 
 .chart-box2 {
-    background: white;
-    border-radius: 10px;
-    width: 50%;
-    height: 100%;
+  background: white;
+  border-radius: 10px;
+  width: 50%;
+  height: 100%;
 }
 
 .cards-container {
@@ -747,5 +819,198 @@ p {
 * {
   max-width: 100vw;
   max-height: 100vh;
+}
+
+@media screen and (max-width: 768px) {
+
+  .sidebar, .header{
+    display: none;
+  }
+
+  .icon-logo {
+    width: 6em;
+  }
+
+  .header-mobile {    
+    display: flex;
+    flex-direction: column;
+    width: 66%;
+    height: 15%;
+  }
+
+  .elementos{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 39%;
+    align-items: center;
+  }
+
+  .logo {
+    height: 54%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 42%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 52%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
+  #btn-menu {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #3ab6ff;
+    border-radius: 7px;
+    background: transparent;
+    display: flex;
+    margin-top: 3px;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 4%;
+  }
+
+  .linha {
+    width: 15px;
+    height: 2px;
+    background-color: #3ab6ff;
+    display: block;
+    margin: 3px auto;
+    position: relative;
+    transform-origin: center;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .bk-charts {
+    flex-direction: column;
+    height: 100%;
+    width: 67%;
+    overflow-y: auto;
+  }
+
+  .charts {
+    width: 98%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-group {
+    width: 76%;
+    min-width: 98%;
+  }
+
+  .titulos {
+    min-width: 0px;
+  }
+  .cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    width: 99%;
+    height: 25%;
+    font-size: 10px;
+  }
+
+  .card {
+    width: 21%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .chart-group2 {
+    height: 49%;
+  }
+
+  .chart-container2 {
+    height: 82%;
+  }
+
+  .chart-container3 {
+    height: 58%;
+  }
+
+  .charts1 {
+    width: 98%;
+  }
+
+  .charts2 {
+    height: 50%;
+    width: 98%;
+  }
+
+  .chart-group4 {
+    width: 100%;
+  }
+
+  .chart-box2 {
+    font-size: 15px;
+  }
+
+  .menu-mobile {
+    background-color: #056dff47;
+    backdrop-filter: blur(8px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65%;
+    border-radius: 5px;
+  }
+
+  .menu-mobile nav a{
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 50px 25px;
+    font-size: 20pt;
+  }
+
+  .menu-mobile nav a:hover{
+    background-color: #056dff8f;
+    border-radius: 5px;
+  }
+
+  .btn-close{
+    background-color: #00000000;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 85%;
+    margin-top: 2%;
+  }
+
 }
 </style>
