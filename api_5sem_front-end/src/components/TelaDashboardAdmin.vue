@@ -265,25 +265,33 @@ export default {
       });
     }
     
-    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null, populateFilters = false) => {
+    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
         const response = await axios.get(url);
         const data = response.data;
 
-        if (populateFilters && Array.isArray(data)) {
-          const sprintSet = new Set();
-          const operatorSet = new Set();
-          const projectSet = new Set();
-          
-          data.forEach(item => {
-            sprintSet.add(item.milestoneName);
-            operatorSet.add(item.userName);
-            projectSet.add(item.projectName);
-          });
+        const sprintSet = new Set();
+        const operatorSet = new Set();
+        const projectSet = new Set();
 
-          sprintList.value = Array.from(sprintSet);
-          operatorList.value = Array.from(operatorSet);
-          projectList.value = Array.from(projectSet);
+        if (Array.isArray(data)) {
+          if (sprintList.value.length == 0 || operatorList.value.length == 0 || projectList.value.length == 0) {
+            data.forEach(item => {
+              sprintSet.add(item.milestoneName);
+              operatorSet.add(item.userName);
+              projectSet.add(item.projectName);
+            });
+
+            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+            operatorList.value = Array.from(operatorSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+            projectList.value = Array.from(projectSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+          }
         }
 
         if (transformFunction && typeof transformFunction === 'function') {
