@@ -6,9 +6,6 @@
       </div>
       <div class="buttons-container">
         <button class="sidebar-button">
-          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-        </button>
-        <button class="sidebar-button">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
@@ -89,6 +86,7 @@
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#">Exportar</a>
+          <a href="#">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
       </div>
@@ -960,7 +958,7 @@ p {
     top: 0;
     left: 0;
     width: 100%;
-    height: 45%;
+    height: 65%;
     border-radius: 5px;
   }
 

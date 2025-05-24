@@ -6,9 +6,6 @@
       </div>
       <div class="buttons-container">
         <button class="sidebar-button">
-          <img src="/homeLogo.ico" alt="Dashboard" class="icon">
-        </button>
-        <button class="sidebar-button">
           <img src="/export.ico" alt="Dashboard" class="icon">
         </button>
         <button class="sidebar-button">
@@ -37,21 +34,37 @@
         </div>
         <span class="user-role">Operador</span>
       </header>
-      <header class="header-mobile">
-      <div class="logo">
-        <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
-      </div>
-      <button class="btn-menu" @click="toggleMenu" id="btn-menu">
-        <span class="linha"></span>
-        <span class="linha"></span>
-        <span class="linha"></span>
-      </button>        
-        <span class="user-role">Operador</span>
-      </header>
+        <header class="header-mobile">
+          <div class="linha1">
+            <div class="logo">
+              <img src="/VisionLogo.ico" alt="Vision Logo" class="icon-logo">
+            </div>
+            <button class="btn-menu" @click="toggleMenu" id="btn-menu">
+              <span class="linha"></span>
+              <span class="linha"></span>
+              <span class="linha"></span>
+            </button>        
+              <span class="user-role">Operador</span>
+          </div>
+          <div class="linha2">
+            <div class="filters">
+              <select v-model="selectedSprint">
+              <option value="">Todas as sprints</option>
+              <option v-for="sprint in sprintList" :key="sprint" :value="sprint">
+                {{ sprint }}
+              </option>
+              </select>
+            <div>
+              <button class="btn-clear" @click="clearFilters">Limpar Filtros</button>
+            </div>  
+          </div>
+        </div>       
+        </header>
       <div class="menu-mobile" v-show="menuAberto">
         <nav>
           <button class="btn-close" @click="toggleMenu">X</button>
           <a href="#">Exportar</a>
+          <a href="#">Manual de Uso</a>
           <router-link to="/" class="logout-link">Logout</router-link>
         </nav>
       </div>
@@ -747,14 +760,44 @@ p {
 
   .icon-logo {
     width: 6em;
-}
+  }
 
   .header-mobile {    
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 66%;
-    height: 7%;
+    height: 13%;
     justify-content: space-between;
+  }
+
+  .linha1 {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 48%;
+    justify-content: space-between;
+  }
+
+  .user-role {
+    font-size: 18px;
+    color: #3ab6ff;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .linha2 {
+    width: 100%;
+    height: 50%;
+  }
+
+  .filters {
+    width: 98%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
   }
 
   #btn-menu {
@@ -858,6 +901,32 @@ p {
     font-size: 15px;
   }
 
+  .filters {
+    width: 98%;
+    height: 76%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2%;
+    align-items: center;
+  }
+
+  .filters select {
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 47%;
+    height: 63%;
+    padding: 0%;
+  }
+
+  .btn-clear {
+    width: 192%;
+    margin-bottom: 1px;
+    border: 2px solid #3ab6ff;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
   .menu-mobile {
     background-color: #056dff47;
     backdrop-filter: blur(8px);
@@ -865,7 +934,7 @@ p {
     top: 0;
     left: 0;
     width: 100%;
-    height: 45%;
+    height: 65%;
     border-radius: 5px;
   }
 
