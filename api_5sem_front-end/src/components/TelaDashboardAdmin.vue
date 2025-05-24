@@ -265,7 +265,7 @@ export default {
       });
     }
     
-    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null, populateFilters = false) => {
+    const fetchData = async (url, labelsRef, dataRef, transformFunction = null, groupByKey = null) => {
       try {
         const response = await axios.get(url);
         const data = response.data;
