@@ -374,8 +374,6 @@ export default {
       }
       const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
 
-      console.log(fullUrl)
-
       const isCountByTag = url.includes('count-tasks-by-tag');
       const isTasksPerSprint = url.includes('tasks-per-sprint');
       const isTasksClosedPerSprint = url.includes('count-cards-by-status-closed'); 

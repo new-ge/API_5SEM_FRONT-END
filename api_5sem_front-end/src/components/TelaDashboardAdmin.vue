@@ -335,8 +335,6 @@ export default {
               'finished' in data[data.length - 2]) ? 'rework-finished' :
               null
           );
-          console.log(typeof data)
-          console.log(keyToGroup)
 
           if (keyToGroup) {
             if (keyToGroup === 'rework-finished') {
@@ -359,14 +357,11 @@ export default {
                 if (key != null) {
                   const quant = item.quant ?? 0;
                   groupedCounts[key] = (groupedCounts[key] || 0) + quant;
-                  console.log(quant)
                 }
               });
 
               labelsRef.value = Object.keys(groupedCounts);
-              console.log(labelsRef)
               dataRef.value = Object.values(groupedCounts);
-              console.log(dataRef)
             }
           } else {
             labelsRef.value = [];
@@ -423,8 +418,6 @@ export default {
       }
 
       const fullUrl = params.length > 0 ? `${url}?${params.join('&')}` : url;
-
-      console.log(fullUrl)
 
       const isCountByTag = url.includes('count-tasks-by-tag');
       const isTasksPerSprint = url.includes('tasks-per-sprint');
