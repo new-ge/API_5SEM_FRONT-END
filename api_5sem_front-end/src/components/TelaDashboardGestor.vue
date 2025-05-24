@@ -281,9 +281,15 @@ export default {
               projectSet.add(item.projectName);
             });
 
-            sprintList.value = Array.from(sprintSet);
-            operatorList.value = Array.from(operatorSet);
-            projectList.value = Array.from(projectSet);
+            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+            operatorList.value = Array.from(operatorSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+            projectList.value = Array.from(projectSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
           }
         }
 

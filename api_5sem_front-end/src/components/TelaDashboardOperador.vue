@@ -256,18 +256,16 @@ export default {
         const data = response.data;
 
         const sprintSet = new Set();
-        const operatorSet = new Set();
-        const projectSet = new Set();
 
         if (Array.isArray(data)) {
           if (sprintList.value.length == 0) {
             data.forEach(item => {
               sprintSet.add(item.milestoneName);
-              operatorSet.add(item.userName);
-              projectSet.add(item.projectName);
             });
 
-            sprintList.value = Array.from(sprintSet);
+            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+              a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
           }
         }
 
