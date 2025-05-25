@@ -409,7 +409,7 @@ export default {
     };
     
     onMounted(async () => {
-      await axios.get('http://localhost:8080/tasks/sync-all-process'),
+      await axios.get('http://localhost:8080/tasks/sync-all-process');
       await Promise.all([
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
