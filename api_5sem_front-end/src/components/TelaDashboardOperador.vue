@@ -168,6 +168,7 @@ export default {
 
     const chartInstances = {};
 
+    const sprintSet = ref(new Set());
     const selectedSprint = ref('');
     const sprintList = ref ([]);
 
@@ -268,15 +269,18 @@ export default {
         const response = await axios.get(url);
         const data = response.data;
 
-        const sprintSet = new Set();
+        const updated = ref(false);
 
         if (Array.isArray(data)) {
-          if (sprintList.value.length == 0) {
-            data.forEach(item => {
-              sprintSet.add(item.milestoneName);
-            });
+          data.forEach(item => {
+            if (!sprintSet.value.has(item.milestoneName)) {
+              sprintSet.value.add(item.milestoneName);
+              updated.value = true;
+            }
+          });
 
-            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+          if (updated.value) {
+            sprintList.value = Array.from(sprintSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
           }
