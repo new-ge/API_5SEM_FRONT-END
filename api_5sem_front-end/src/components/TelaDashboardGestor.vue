@@ -163,7 +163,7 @@ Chart.register(...registerables);
 
 export default {
   setup() {
-    const menuAberto = ref(false)
+    const menuAberto = ref(false);
 
     function toggleMenu() {
       menuAberto.value = !menuAberto.value
@@ -195,6 +195,10 @@ export default {
     const projectList = ref ([]);
     const operatorList = ref ([]);
     const sprintList = ref ([]);
+
+    const sprintSet = ref(new Set());
+    const operatorSet = ref(new Set());
+    const projectSet = ref(new Set());
 
     const clearFilters = () => {
       selectedProject.value = '';
@@ -293,25 +297,32 @@ export default {
         const response = await axios.get(url);
         const data = response.data;
 
-        const sprintSet = new Set();
-        const operatorSet = new Set();
-        const projectSet = new Set();
+        const updated = ref(false);
 
         if (Array.isArray(data)) {
-          if (sprintList.value.length == 0 || operatorList.value.length == 0 || projectList.value.length == 0) {
-            data.forEach(item => {
-              sprintSet.add(item.milestoneName);
-              operatorSet.add(item.userName);
-              projectSet.add(item.projectName);
-            });
+          data.forEach(item => {
+            if (!sprintSet.value.has(item.milestoneName)) {
+              sprintSet.value.add(item.milestoneName);
+              updated.value = true;
+            }
+            if (!operatorSet.value.has(item.userName)) {
+              operatorSet.value.add(item.userName);
+              updated.value = true;
+            }
+            if (!projectSet.value.has(item.projectName)) {
+              projectSet.value.add(item.projectName);
+              updated.value = true;
+            }
+          });
 
-            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+          if (updated.value) {
+            sprintList.value = Array.from(sprintSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
-            operatorList.value = Array.from(operatorSet).sort((a, b) =>
+            operatorList.value = Array.from(operatorSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
-            projectList.value = Array.from(projectSet).sort((a, b) =>
+            projectList.value = Array.from(projectSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
           }
@@ -454,7 +465,7 @@ export default {
     };
     
     onMounted(async () => {
-      await axios.get('http://localhost:8080/tasks/sync-all-process'),
+      await axios.get('http://localhost:8080/tasks/sync-all-process');
       await Promise.all([
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),

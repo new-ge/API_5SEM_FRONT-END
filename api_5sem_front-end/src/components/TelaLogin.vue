@@ -61,11 +61,11 @@ export default defineComponent({
         localStorage.setItem('username', username.value);
         localStorage.setItem('role', role);
 
-        if (role === 'PRODUCT OWNER') {
+        if (role === 'Product Owner') {
           router.push('/ResultadosDoAdmin');
-        } else if (role === 'STAKEHOLDER') {
+        } else if (role === 'Stakeholder') {
           router.push('/ResultadosDoGestor');
-        } else if (['UX', 'BACK', 'FRONT', 'DESIGN'].includes(role)) {
+        } else if (['UX', 'Back', 'Front', 'Design'].includes(role)) {
           router.push('/ResultadosDoOperador');
         } else {
           alert('Role não reconhecida: ' + role);

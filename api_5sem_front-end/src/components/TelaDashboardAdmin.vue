@@ -455,7 +455,6 @@ export default {
     
     onMounted(async () => {
       await axios.get('http://localhost:8080/tasks/sync-all-process');
-      await fetchData('http://localhost:8080/tasks/sprints-for-admin', labels, data, null, null, true);
       await Promise.all([
         fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
         fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
