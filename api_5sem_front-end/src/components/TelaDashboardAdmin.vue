@@ -197,6 +197,10 @@ export default {
     const operatorList = ref ([]);
     const sprintList = ref ([]);
 
+    const sprintSet = ref(new Set());
+    const operatorSet = ref(new Set());
+    const projectSet = ref(new Set());
+
     const clearFilters = () => {
       selectedProject.value = '';
       selectedOperator.value = '';
@@ -294,9 +298,7 @@ export default {
         const response = await axios.get(url);
         const data = response.data;
 
-        const sprintSet = new Set();
-        const operatorSet = new Set();
-        const projectSet = new Set();
+        const updated = ref(false);
 
         if (Array.isArray(data)) {
           data.forEach(item => {

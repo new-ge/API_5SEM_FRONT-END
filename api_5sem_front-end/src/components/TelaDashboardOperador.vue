@@ -168,7 +168,7 @@ export default {
 
     const chartInstances = {};
 
-    const operatorSet = ref(new Set());
+    const sprintSet = ref(new Set());
     const selectedSprint = ref('');
     const sprintList = ref ([]);
 
@@ -273,14 +273,14 @@ export default {
 
         if (Array.isArray(data)) {
           data.forEach(item => {
-            if (!operatorSet.value.has(item.userName)) {
-              operatorSet.value.add(item.userName);
+            if (!sprintSet.value.has(item.milestoneName)) {
+              sprintSet.value.add(item.milestoneName);
               updated.value = true;
             }
           });
 
           if (updated.value) {
-            operatorList.value = Array.from(operatorSet.value).sort((a, b) =>
+            sprintList.value = Array.from(sprintSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
           }
