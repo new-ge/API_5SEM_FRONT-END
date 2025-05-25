@@ -299,20 +299,29 @@ export default {
         const projectSet = new Set();
 
         if (Array.isArray(data)) {
-          if (sprintList.value.length == 0 || operatorList.value.length == 0 || projectList.value.length == 0) {
-            data.forEach(item => {
-              sprintSet.add(item.milestoneName);
-              operatorSet.add(item.userName);
-              projectSet.add(item.projectName);
-            });
+          data.forEach(item => {
+            if (!sprintSet.value.has(item.milestoneName)) {
+              sprintSet.value.add(item.milestoneName);
+              updated.value = true;
+            }
+            if (!operatorSet.value.has(item.userName)) {
+              operatorSet.value.add(item.userName);
+              updated.value = true;
+            }
+            if (!projectSet.value.has(item.projectName)) {
+              projectSet.value.add(item.projectName);
+              updated.value = true;
+            }
+          });
 
-            sprintList.value = Array.from(sprintSet).sort((a, b) =>
+          if (updated.value) {
+            sprintList.value = Array.from(sprintSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
-            operatorList.value = Array.from(operatorSet).sort((a, b) =>
+            operatorList.value = Array.from(operatorSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
-            projectList.value = Array.from(projectSet).sort((a, b) =>
+            projectList.value = Array.from(projectSet.value).sort((a, b) =>
               a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
             );
           }
