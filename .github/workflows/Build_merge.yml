@@ -56,3 +56,10 @@ jobs:
             --merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger deploy workflow
+        run: |
+          gh workflow run auto_deployment_azure.yml \
+            --repo $GITHUB_REPOSITORY
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
