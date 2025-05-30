@@ -32,3 +32,10 @@ jobs:
       - name: Build project
         run: npm run build --if-present
         working-directory: ./api_5sem_front-end
+
+      - name: Trigger deploy workflow
+        run: |
+          gh workflow run auto_deployment_azure.yml \
+            --repo $GITHUB_REPOSITORY
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
