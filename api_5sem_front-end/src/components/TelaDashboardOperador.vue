@@ -247,7 +247,7 @@ export default {
       const dd = String(today.getDate()).padStart(2, '0');
       const formattedDate = `${yyyy}-${mm}-${dd}`;
       
-      axios.get('http://localhost:8080/tasks/request-excel', { responseType: 'blob' })
+      axios.get(`${import.meta.env.VITE_URL_BACKEND}/tasks/request-excel`, { responseType: 'blob' })
         .then(response => {
           const blob = response.data;
           const url = window.URL.createObjectURL(blob);
@@ -352,12 +352,12 @@ export default {
 
     watch([selectedSprint], async () => {
       await Promise.all([
-        updateData('http://localhost:8080/tasks/count-tasks-by-tag'),
-        updateData('http://localhost:8080/tasks/tasks-per-sprint'),
-        updateData('http://localhost:8080/tasks/count-cards-by-status-closed'),
-        updateData('http://localhost:8080/tasks/count-rework'),
-        updateData('http://localhost:8080/tasks/count-tasks-by-status'),
-        updateData('http://localhost:8080/tasks/average-time')
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-tasks-by-tag`),
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/tasks-per-sprint`),
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-cards-by-status-closed`),
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-rework`),
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-tasks-by-status`),
+        updateData(`${import.meta.env.VITE_URL_BACKEND}/tasks/average-time`)
       ]),
       
       await nextTick(); 
@@ -413,14 +413,14 @@ export default {
     };
     
     onMounted(async () => {
-      await axios.get('http://localhost:8080/tasks/sync-all-process');
+      await axios.get(`${import.meta.env.VITE_URL_BACKEND}/tasks/sync-all-process`);
       await Promise.all([
-        fetchData('http://localhost:8080/tasks/count-tasks-by-tag', labels, data, null, 'tagName'),
-        fetchData('http://localhost:8080/tasks/count-tasks-by-status', labels2, data2, null, 'statusName'),
-        fetchData('http://localhost:8080/tasks/count-rework', labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
-        fetchData('http://localhost:8080/tasks/tasks-per-sprint', labelsCriados, dataCriados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/count-cards-by-status-closed', labelsFinalizados, dataFinalizados, null, 'milestoneName'),
-        fetchData('http://localhost:8080/tasks/average-time', labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-tasks-by-tag`, labels, data, null, 'tagName'),
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-tasks-by-status`, labels2, data2, null, 'statusName'),
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-rework`, labelsRetrabalhos, dataRetrabalhos, null, 'rework-finished'),
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/tasks-per-sprint`, labelsCriados, dataCriados, null, 'milestoneName'),
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/count-cards-by-status-closed`, labelsFinalizados, dataFinalizados, null, 'milestoneName'),
+        fetchData(`${import.meta.env.VITE_URL_BACKEND}/tasks/average-time`, labelsTempoMedio, dataTempoMedio, null, 'milestoneName')
       ]),
       await nextTick(); 
       renderChart('cardsPorEtiqueta', 'Visualizar', labels.value, data.value, 'bar');
