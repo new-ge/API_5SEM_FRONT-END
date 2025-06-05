@@ -200,7 +200,7 @@ export default {
     const operatorSet = ref(new Set());
     const projectSet = ref(new Set());
 
-    const backendUrl = window.APP_CONFIG.VITE_URL_BACKEND
+    const backendUrl = window.__APP_CONFIG__?.VITE_URL_BACKEND;
 
     const clearFilters = () => {
       selectedProject.value = '';

@@ -172,7 +172,7 @@ export default {
     const selectedSprint = ref('');
     const sprintList = ref ([]);
 
-    const backendUrl = window.APP_CONFIG.VITE_URL_BACKEND
+    const backendUrl = window.__APP_CONFIG__?.VITE_URL_BACKEND;
 
     const clearFilters = () => {
       selectedSprint.value = '';
