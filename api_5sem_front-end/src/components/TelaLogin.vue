@@ -32,6 +32,7 @@ export default defineComponent({
     const password = ref('');
     const logoSrc = LogoVisionLoginImg;
     const router = useRouter();
+    const backendUrl = window.APP_CONFIG.VITE_URL_BACKEND
 
     const handleLogin = async () => {
       if (!username.value || !password.value) {
@@ -45,7 +46,7 @@ export default defineComponent({
       }
 
       try {
-        const response = await axios.post(`${import.meta.env.VITE_URL_BACKEND}/users/login`, null, {
+        const response = await axios.post(`${backendUrl}/users/login`, null, {
           params: {
             username: username.value,
             password: password.value
